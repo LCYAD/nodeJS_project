@@ -1,0 +1,58 @@
+body{
+    margin: 0px;
+    padding: 0px;
+}
+
+.nav-link{
+    font-size: 15px;
+    font-weight: bold;
+    color: black;
+}
+
+.alert.alert-danger{
+    margin: 10px 10px;
+}
+
+.alert.alert-success{
+    margin: 10px 10px;
+}
+
+.page-header{
+    margin: 40px 0px 10px 0px;
+    border-bottom: none;
+}
+
+.user-title{
+    font-size: 18px;
+    font-weight: 800;
+    padding: 25px 0px;
+    border: 1px solid black;
+    height: 80px;
+}
+
+.user-info{
+    font-size: 15px;
+    border: 1px solid black;
+    height: 80px;
+}
+
+.front-hr{
+    border: 2px solid rgba(153, 67, 67, 0.568); 
+    border-radius: 5px; 
+    width: 40%;
+    margin-top: 0px;
+}
+
+#menu-bar{
+    background: rgba(79, 94, 117, 0.733); 
+    height: 92vh;
+}
+
+#console-panel{
+    background: rgba(212, 215, 219, 0.733); 
+    height: 92vh;
+}
+
+#enter-app{
+    outline: none;
+}

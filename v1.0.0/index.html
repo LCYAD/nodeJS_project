@@ -1,0 +1,118 @@
+<html>
+<head>
+    <!-- CSS link -->
+    <link href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.4.0/css/font-awesome.min.css" rel="stylesheet" type="text/css" />
+    <!-- End CSS link -->
+</head>
+<body>
+
+    <div class="container">
+        <div class="row">
+          <div class="col-lg-4" style="height: 200px">
+            <div class="col-lg-12">EUR_USD</div>
+            <div class="col-lg-6">
+              <div class="" id="bid1"> -- </div>
+              <div class="" id="ask1"> -- </div>
+            </div>
+          </div>
+          <div class="col-lg-4" style="height: 200px">
+              <div class="col-lg-12">USDJPY</div>
+              <div class="col-lg-6">
+                <div class="" id="bid2"> -- </div>
+                <div class="" id="ask2"> -- </div>
+              </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- JS script goes below -->
+    <script src="https://code.jquery.com/jquery-3.2.1.min.js" integrity="sha256-hwg4gsxgFZhOsEEamdOYGBf13FyQuiTwlAQgxVSNgt4=" crossorigin="anonymous"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js" integrity="sha384-Tc5IQib027qvyjSMfHjOMaLkfuWVxZxUPnCJA7l2mCWNIpG9mGCD8wGNIcPD7Txa" crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/2.0.3/socket.io.js"></script>
+    <!-- End JS Library-->		  
+    
+    <!-- custom JS script goes here -->
+    <script>
+
+      //change the color of the element for 1 second
+      function priceDecrease(item){
+        item.css("background", "red");
+        setTimeout(function(){
+          item.css("background", "white");
+        }, 1000);
+      }
+
+      //change the color of the element for 1 second
+      function priceIncrease(item){
+        item.css("background", "green");
+        setTimeout(function(){
+          item.css("background", "white");
+        }, 1000);
+      }
+
+      //append the new price to the respective instrument
+      function appendDash(ask_dom, bid_dom, ask, bid){
+        let previous_ask = ask_dom.html();
+        let previous_bid = bid_dom.html();
+
+        if (ask > previous_ask){
+          ask_dom.empty();
+          ask_dom.append(ask);
+          priceIncrease(ask_dom);
+        } else if (ask < previous_ask){
+          ask_dom.empty();
+          ask_dom.append(ask);
+          priceDecrease(ask_dom);
+        }
+        if (bid > previous_bid){
+          bid_dom.empty();
+          bid_dom.append(bid);
+          priceIncrease(bid_dom);
+        } else if (bid < previous_bid){
+          bid_dom.empty();
+          bid_dom.append(bid);
+          priceDecrease(bid_dom);
+        }
+      }
+
+      //check which instrument to data is referring to then call function to change it
+      function alterDash(ask, bid, instrument){
+        let ask_dom = null;
+        let bid_dom = null;
+        if (instrument == "EUR_USD") {
+          ask_dom = $ask1;
+          bid_dom = $bid1;
+          appendDash(ask_dom, bid_dom, ask, bid);
+        } else if (instrument === "USD_JPY"){
+          ask_dom = $ask2;
+          bid_dom = $bid2;
+          appendDash(ask_dom, bid_dom, ask, bid);
+        }
+      }
+
+
+      let $ask1 = $('#ask1');
+      let $bid1 = $('#bid1');
+      let $ask2 = $('#ask2');
+      let $bid2 = $('#bid2');
+      var socket = io.connect('http://localhost:8080');
+      socket.on('news', function (data) {
+        JSON_data = JSON.parse(data);
+        //console.log(JSON_data);
+        
+        //Only work on the new data
+        if (JSON_data.type != "HEARTBEAT"){
+          let ask = JSON_data.asks[0].price;
+          let bid = JSON_data.bids[0].price;
+          let instrument = JSON_data.instrument;
+          //console.log(`Instrument: ${instrument}, bid: ${bid}, ask: ${ask}`);
+          alterDash(ask, bid, instrument);
+        }
+        
+      });
+    </script> 
+    <!-- end custom JS script -->
+
+</body>
+</html>

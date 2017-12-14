@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <!-- CSS link -->
+    <link href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" 
+        rel="stylesheet" 
+        integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" 
+        crossorigin="anonymous">
+    <link href="/css/main.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.4.0/css/font-awesome.min.css" rel="stylesheet" type="text/css" />
+    <link href="https://fonts.googleapis.com/css?family=Spectral+SC" rel="stylesheet">
+    <!-- End CSS link -->
+</head>
+
+<body>
+   
+    <div class="container" style="margin: 0px; width: 100%; height: 100%;">
+        <div class="row">
+            <div class="header clearfix"  style="background: rgba(34, 34, 119, 0.63); color: black; padding: 5px 20px;">
+            <nav>
+                <ul class="nav nav-pills pull-right">
+                
+                {{#if user}}
+                <li class="nav-item">
+                    <a class="nav-link" href="/users/logout">Logout</a>
+                </li>
+                {{else}}
+                <li class="nav-item">
+                    <a class="nav-link" href="/users/login">Login</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="/users/register">Register</a>
+                </li>
+                {{/if}}
+                </ul>
+            </nav>
+                <h3 style="margin: 10px; font-family: 'Spectral SC', serif;">Trader's Den <sub style="font-size: 11px;">powered by &reg; Oanada</sub></h3>
+            </div>
+        </div>
+        
+
+        <div class="row">
+            <div class="col-lg-12" style="padding: 0px;">
+                
+                {{#if success_msg}}
+                <div class="col-lg-6 col-lg-offset-3">
+                    <div class="alert alert-success"  style="margin-top: 10px;">{{success_msg}}</div>
+                </div>
+                {{/if}}
+                {{#if error_msg}}
+                <div class="col-lg-6 col-lg-offset-3">
+                    <div class="alert alert-danger"  style="margin-top: 10px;">{{error_msg}}</div>
+                </div>
+                {{/if}}
+                {{#if error}}
+                <div class="col-lg-6 col-lg-offset-3">
+                    <div class="alert alert-danger"  style="margin-top: 10px;">{{error}}</div>
+                </div>
+                {{/if}}
+                {{{body}}}
+            </div>
+        </div>
+
+    </div> <!-- /container -->   
+   
+    <!-- JS script goes below -->
+    <script src="https://code.jquery.com/jquery-3.2.1.min.js" integrity="sha256-hwg4gsxgFZhOsEEamdOYGBf13FyQuiTwlAQgxVSNgt4="
+        crossorigin="anonymous"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js" integrity="sha384-Tc5IQib027qvyjSMfHjOMaLkfuWVxZxUPnCJA7l2mCWNIpG9mGCD8wGNIcPD7Txa" 
+        crossorigin="anonymous"></script>
+    <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/2.0.3/socket.io.js"></script>
+    <!-- End JS Library-->		
+
+    <!-- Custom JS script -->
+    <script>
+        let path = window.location.pathname;
+        let token = $("#token").val();
+        //let accountID = $("#accountID").val();
+
+        function showWarning(item){
+            item.show();
+            setTimeout(()=>{
+                item.hide();
+            }, 5000)
+        }
+
+        //change the color of the element for 1 second
+        function priceDecrease(item){
+            item.css("background", "red");
+            setTimeout(function(){
+            item.css("background", "white");
+            }, 1000);
+        }
+
+        //change the color of the element for 1 second
+        function priceIncrease(item){
+            item.css("background", "green");
+            setTimeout(function(){
+            item.css("background", "white");
+            }, 1000);
+        }
+
+        //append the new price to the respective instrument
+        function appendDash(ask_dom, bid_dom, ask, bid){
+            let previous_ask = ask_dom.html();
+            let previous_bid = bid_dom.html();
+
+            if (ask > previous_ask){
+                ask_dom.empty();
+                ask_dom.append(ask);
+                priceIncrease(ask_dom);
+            } else if (ask < previous_ask){
+                ask_dom.empty();
+                ask_dom.append(ask);
+                priceDecrease(ask_dom);
+            }
+            if (bid > previous_bid){
+                bid_dom.empty();
+                bid_dom.append(bid);
+                priceIncrease(bid_dom);
+            } else if (bid < previous_bid){
+                bid_dom.empty();
+                bid_dom.append(bid);
+                priceDecrease(bid_dom);
+            }
+        }
+
+        //check which instrument to data is referring to then call function to change it
+        function alterDash(ask, bid, instrument, $ask1, $ask2, $bid1, $bid2){
+            let ask_dom = null;
+            let bid_dom = null;
+            if (instrument == "EUR_USD") {
+                ask_dom = $ask1;
+                bid_dom = $bid1;
+            appendDash(ask_dom, bid_dom, ask, bid);
+            } else if (instrument === "USD_JPY"){
+                ask_dom = $ask2;
+                bid_dom = $bid2;
+            appendDash(ask_dom, bid_dom, ask, bid);
+            }
+        }
+
+        if (path === '/'){
+            //only loads if they are in account info area
+            let $misstoken = $('#miss-token');
+            //let $missaccount = $('#miss-account');
+            let $invalidinfo = $('#invalid-info');
+            $('#enter-app').on('click', ()=>{
+                console.log(token);
+                //console.log(accountID);
+                if (!token){showWarning($misstoken)};
+                //if (!accountID){showWarning($missaccount)};
+                if (token){
+                    //check to see if there is an account or not
+                    let link = `https://api-fxpractice.oanda.com/v3/accounts`;
+                    axios.get(link, {
+                        headers: {'Authorization': `Bearer ${token}`}
+                    }).then((res)=>{
+                        location.replace("/console/dashboard");
+                    }).catch((err)=>{
+                        console.log(err);
+                        showWarning($invalidinfo);
+                    });
+                }
+            });
+        } else if (path.includes('/console')){
+            //check if the access token works or not
+            let link = `https://api-fxpractice.oanda.com/v3/accounts`;
+            axios.get(link, {
+                headers: {'Authorization': `Bearer ${token}`}
+            }).then(()=>{}).catch(()=>{
+                location.replace("/");
+            });
+
+            if (path === "/console/dashboard"){
+                let $ask1 = $('#ask1');
+                let $bid1 = $('#bid1');
+                let $ask2 = $('#ask2');
+                let $bid2 = $('#bid2');
+                let socket = io.connect('http://localhost:8080');
+                socket.on("tick", (data)=>{
+                    JSON_data = JSON.parse(data);
+                    let ask = JSON_data.asks[0].price;
+                    let bid = JSON_data.bids[0].price;
+                    let instrument = JSON_data.instrument;
+                    //console.log(`Instrument: ${instrument}, bid: ${bid}, ask: ${ask}`);
+                    alterDash(ask, bid, instrument, $ask1, $ask2, $bid1, $bid2);
+                    
+                });
+
+            }
+            
+            //socket IO starts here
+            //let socket = io.connect('http://localhost:8080');
+
+            setInterval(()=>{
+                axios.get(link, {
+                    headers: {'Authorization': `Bearer ${token}`}
+                }).then(()=>{}).catch(()=>{
+                    location.replace("/");
+                })
+            }, 1000*30*60);
+        }
+    </script>
+    <!-- End Custom JS script -->
+</body>
+</html>

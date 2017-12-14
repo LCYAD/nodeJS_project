@@ -1,0 +1,100 @@
+<input  id="username" value="{{username}}" style="display:none">
+<input  id="token" value="{{token}}" style="display:none">
+<!--<input id="accountID" value="{{accountID}}" style="display:none">-->
+<div class="col-lg-6 col-lg-offset-3 col-md-6 col-md-offset-3 col-sm-6 col-sm-offset-3 col-xs-12 text-center">
+    <h2 class='page-header'>Token information</h2>
+    <hr class="front-hr">
+    <div class="col-lg-5 col-md-5 col-sm-5 col-xs-5 user-title">
+        Username
+    </div>
+    <div class="col-lg-7 col-md-7 col-sm-7 col-xs-7 user-info">
+        <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12" style="padding: 25px;">
+            {{username}}
+        </div>
+    </div>
+    <!--
+    <div class="col-lg-5 col-md-5 col-sm-5 col-xs-5 user-title">
+        Account ID
+    </div>
+    <div class="col-lg-7 col-md-7 col-sm-7 col-xs-7 user-info" >
+        <div class="col-lg-8 col-md-8 col-sm-8 col-xs-8 text-right" style="padding: 25px;">
+            {{#if accountID}}
+                {{accountID}}
+            {{else}}
+                <i style="color: red;">Missing Account ID</i>
+            {{/if}}
+        </div>
+        <div class="col-lg-4 col-md-4 col-sm-4 col-xs-4" style="padding: 20px;">
+            <button class="btn btn-primary" data-toggle="modal" data-target="#acModal">Change</button>
+        </div>
+    </div> -->
+    <div class="col-lg-5 col-md-5 col-sm-5 col-xs-5 user-title">
+        Access Token
+    </div>
+    <div class="col-lg-7 col-md-7 col-sm-7 col-xs-7 user-info">
+        <div class="col-lg-8 col-md-8 col-sm-8 col-xs-8 text-right" style="padding: 25px;  overflow: hidden; text-overflow: ellipsis;">
+            {{#if token}}
+                <i style="font-size: 10px; white-space: nowrap; max-width: 100px;">
+                    {{token}}
+                </i>
+            {{else}}
+                <i style="color: red;">Missing Access Token</i>
+            {{/if}}
+        </div>
+        <div class="col-lg-4 col-md-4 col-sm-4 col-xs-4" style="padding: 20px;">
+            <button class="btn btn-primary" data-toggle="modal" data-target="#tokenModal">Change</button>
+        </div>
+    </div>
+    <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12" style="margin-top: 30px;">
+        <button class="btn btn-primary" id="enter-app">Move to Main Console</button>
+    </div>
+</div>
+<div class="col-lg-6 col-lg-offset-3 col-md-6 col-md-offset-3 col-sm-6 col-sm-offset-3 col-xs-12 text-center">
+    <div class="col-lg-8 col-lg-offset-2 ">
+        <div class="alert alert-danger" style="display:none;" id="miss-token">Enter a Access Token</div>
+        <!--<div class="alert alert-danger" style="display:none;" id="miss-account">Enter a AccountID</div>-->
+        <div class="alert alert-danger" style="display:none;" id="invalid-info">Invalid Information. Check your Access Token</div>
+    </div>
+</div>
+
+
+<!-- Account ID change form -->
+<!--
+<div id="acModal" class="modal fade" role="dialog">
+  <div class="modal-dialog">
+     Modal content
+    <div class="modal-content">
+      <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal">&times;</button>
+        <h4 class="modal-title">Change the Account ID</h4>
+      </div>
+      <div class="modal-body">
+        <input placeholder="Enter Account ID" id="input-accountID" style="width: 100%">
+      </div>
+      <div class="modal-footer">
+        <button id="submit-accountID"class="btn btn-default">Submit</button>
+      </div>
+    </div>
+  </div>
+</div> -->
+
+<!-- Token change form -->
+<div id="tokenModal" class="modal fade" role="dialog">
+  <div class="modal-dialog">
+    <!-- Modal content-->
+    <div class="modal-content">
+        <form method="post" action="/">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal">&times;</button>
+                <h4 class="modal-title">Change the Access Token</h4>
+            </div>
+            <div class="modal-body">
+                <input type="text" placeholder="Enter Access Token" name="token" id="input-token" style="width: 100%">
+            </div>
+            <div class="modal-footer">
+                <button id="submit-token" class="btn btn-default">Submit</button>
+            </div>
+        </form>
+    </div>
+  </div>
+</div>
