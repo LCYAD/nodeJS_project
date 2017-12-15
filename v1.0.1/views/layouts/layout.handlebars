@@ -180,7 +180,13 @@
                 let $bid2 = $('#bid2');
                 let socket = io.connect('http://localhost:8080');
                 socket.on("tick", (data)=>{
-                    JSON_data = JSON.parse(data);
+                    try{
+                        JSON_data = JSON.parse(data);
+                    }
+                    catch(err){
+                        console.log(err);
+                        console.log(data);
+                    }
                     let ask = JSON_data.asks[0].price;
                     let bid = JSON_data.bids[0].price;
                     let instrument = JSON_data.instrument;
