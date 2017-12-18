@@ -27,7 +27,7 @@ const allInstrument = [
 function getOtherInstruments(instruments){
     return allInstrument.filter((item)=>{
         return !(item in instruments);
-    })
+    }).sort();
 }
 
 //Get Homepage
@@ -70,7 +70,7 @@ router.get('/console/dashboard', ensureAuthenticated, (req,res)=>{
     let obj = {
         username: req.user.username,
         token: req.user.token || "",
-        instruments: req.user.instruments || [],
+        instruments: req.user.instruments.sort() || [],
         other_instruments: other_instruments || []
     };
     res.render('dashboard', obj);
