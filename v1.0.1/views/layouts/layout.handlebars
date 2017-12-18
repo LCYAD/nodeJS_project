@@ -142,20 +142,73 @@
             }
         }
 
-        //check which instrument to data is referring to then call function to change it
-        /*function alterDash(ask, bid, instrument, $ask1, $ask2, $bid1, $bid2){
-            let ask_dom = null;
-            let bid_dom = null;
-            if (instrument == "EUR_USD") {
-                ask_dom = $ask1;
-                bid_dom = $bid1;
-            appendDash(ask_dom, bid_dom, ask, bid);
-            } else if (instrument === "USD_JPY"){
-                ask_dom = $ask2;
-                bid_dom = $bid2;
-            appendDash(ask_dom, bid_dom, ask, bid);
-            }
-        }*/
+        function changeTable(){
+            //hide the Dash and show Table
+            $('#instrument-table').show();
+            $('#instrument-board').hide();
+            $('#instrument-option').hide();
+        }
+
+        function changeBoard(){
+            //hide the Dash and show Table
+            $('#instrument-table').hide();
+            $('#instrument-board').show();
+            $('#instrument-option').hide();
+        }
+
+        function changeOption(){
+            $('#instrument-table').hide();
+            $('#instrument-board').hide();
+            $('#instrument-option').show();
+        }
+
+        function removeInstrument(instrument){
+            // remove the Instrument from the Board and Table
+            $(`.table-box.${instrument}`).remove();
+            $(`.instrument-box.${instrument}`).remove();
+            // remove the option-box from the option bar
+            $(`.option-box.selected.${instrument}`).remove();
+            // append the option-box back to the available area
+            $('#options-available').append(
+                `<div class="col-lg-12 option-box available ${instrument}">
+                    <div class="col-lg-6 instrument-title">${instrument}</div>
+                    <button class="col-lg-3 col-lg-offset-3" onclick="addInstrument('${instrument}')" style="margin-top:2px;">
+                        <i class="fa fa-check" aria-hidden="true" style="color: green;"></i>
+                    </button>
+                </div>`
+            );
+        }
+
+        function addInstrument(instrument){
+            //append the Instrument from the Board and Table
+            $('#instrument-board').append(
+                `<div class="col-lg-5 instrument-box ${instrument}">
+                    <div type="button" class="col-lg-12 btn btn-secondary instrument-title">${instrument}</div>
+                    <div class="col-lg-6 instrument-subtitle">bid</div>
+                    <div class="col-lg-6 instrument-subtitle">ask</div>
+                    <div type="button" class="col-lg-6 instrument-content ${instrument} bid"> -- </div>
+                    <div type="button" class="col-lg-6 instrument-content ${instrument} ask"> -- </div>
+                </div>`
+            );
+            $('#instrument-table').append(
+                `<div class="col-lg-12 table-box ${instrument}">
+                    <div type="button" class="col-lg-6 btn btn-secondary instrument-title">${instrument}</div>
+                    <div type="button" class="col-lg-3 instrument-content ${instrument} bid"  style="margin-top: 3px;"> -- </div>
+                    <div type="button" class="col-lg-3 instrument-content ${instrument} ask"  style="margin-top: 3px;"> -- </div>
+                </div>`
+            );
+            // remove the option-box from the option bar
+            $(`.option-box.available.${instrument}`).remove();
+            // append the option-box back to the available area
+            $('#options-selected').append(
+                `<div class="col-lg-12 option-box selected ${instrument}">
+                    <div class="col-lg-6 instrument-title">${instrument}</div>
+                    <button class="col-lg-3 col-lg-offset-3" onclick="removeInstrument('${instrument}')" style="margin-top:2px;">
+                        <i class="fa fa-times" aria-hidden="true" style="color: red;"></i>
+                    </button>
+                </div>`
+            );
+        }
 
         if (path === '/'){
             //only loads if they are in account info area
@@ -196,19 +249,21 @@
                 //let $bid2 = $('#bid2');
                 let socket = io.connect('http://localhost:8080');
                 socket.on("tick", (data)=>{
-                    try{
-                        JSON_data = JSON.parse(data);
+                    if (!data.includes('HEARTBEAT')){
+                        try{
+                            JSON_data = JSON.parse(data);
+                        }
+                        catch(err){
+                            console.log(err);
+                            console.log(data);
+                        }
+                        let ask = JSON_data.asks[0].price;
+                        let bid = JSON_data.bids[0].price;
+                        let instrument = JSON_data.instrument;
+                        console.log(`Instrument: ${instrument}, bid: ${bid}, ask: ${ask}`);
+                        appendDash($(`.${instrument}.ask`), $(`.${instrument}.bid`), ask , bid);
                     }
-                    catch(err){
-                        console.log(err);
-                        console.log(data);
-                    }
-                    let ask = JSON_data.asks[0].price;
-                    let bid = JSON_data.bids[0].price;
-                    let instrument = JSON_data.instrument;
-                    console.log(`Instrument: ${instrument}, bid: ${bid}, ask: ${ask}`);
-                    //alterDash(ask, bid, instrument, $ask1, $ask2, $bid1, $bid2);
-                    appendDash($(`.${instrument}.ask`), $(`.${instrument}.bid`), ask , bid);
+                    
                 });
 
             }

@@ -30,35 +30,34 @@ module.exports.requestData = ()=>{
             
             bodyChunk = chunk.toString();
             //console.log(bodyChunk);
-            //check if the string ends with } or not
-            if (!bodyChunk.includes("HEARTBEAT")){
-                //check if the data starts with a { and ends with a }
-                if (/}\s*$/g.test(bodyChunk) && /^\s*{/g.test(bodyChunk)){
-                    //console.log(bodyChunk);
-                    if ((bodyChunk.match(/instrument/g) || [] ).length == 1){
-                        sio.emitTick(bodyChunk);
+            
+            //check if the data starts with a { and ends with a }
+            if (/}\s*$/g.test(bodyChunk) && /^\s*{/g.test(bodyChunk)){
+                //console.log(bodyChunk);
+                if ((bodyChunk.match(/instrument/g) || [] ).length == 1){
+                    sio.emitTick(bodyChunk);
+                } else {
+                    temp_arr = bodyChunk.split('\n');
+                    for (let x = 0; x < temp_arr.length-1; x++){
+                        sio.emitTick(temp_arr[x]);
+                    }
+                }
+            } else {
+                temp_str += bodyChunk;
+                if (/}\s*$/g.test(temp_str) && /^\s*{/g.test(temp_str)){
+                    //console.log('Emitting whole JSON \n' + temp_str);
+                    if ((temp_str.match(/instrument/g) || [] ).length == 1){
+                        sio.emitTick(temp_str);
                     } else {
-                        temp_arr = bodyChunk.split('\n');
-                        for (let x = 0; x < temp_arr.length-1; x++){
-                            sio.emitTick(temp_arr[x]);
+                        temp_str_arr = bodyChunk.split('\n');
+                        for (let y = 0; y < temp_str_arr.length-1; y++){
+                            sio.emitTick(temp_str_arr[y]);
                         }
                     }
-                } else {
-                   temp_str += bodyChunk;
-                   if (/}\s*$/g.test(temp_str) && /^\s*{/g.test(temp_str)){
-                       //console.log('Emitting whole JSON \n' + temp_str);
-                        if ((temp_str.match(/instrument/g) || [] ).length == 1){
-                            sio.emitTick(temp_str);
-                        } else {
-                            temp_str_arr = bodyChunk.split('\n');
-                            for (let y = 0; y < temp_str_arr.length-1; y++){
-                                sio.emitTick(temp_str_arr[y]);
-                            }
-                        }
-                        temp_str = "";
-                   }
+                    temp_str = "";
                 }
             }
+            
         });
         response.on("end", function(chunk){
             console.log("Error connecting to OANDA HTTP Rates Server");
