@@ -56,3 +56,55 @@ body{
 #enter-app{
     outline: none;
 }
+
+/*Dashboard*/
+
+#console-panel{
+    padding: 0px;
+    margin:0px;
+}
+
+#instruments-area{
+    height: 60vh; 
+    border: 1px solid grey; 
+    overflow-y: scroll;
+    padding: 0px;
+    margin: 0px;
+}
+
+#chart-area{
+    height: 60vh; 
+    border: 1px solid grey; 
+}
+
+#position-area{
+    height: 32vh; 
+    border: 1px solid grey; 
+    overflow-y: scroll;
+}
+
+.instrument-box{
+    padding: 10px;
+    border: 0.5px solid black;
+}
+
+.instrument-title{
+    font-size: 16px;
+    font-weight: 700;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    padding: 0px;
+    margin: 4px 0px;
+}
+
+.instrument-subtitle{
+    padding: 3px 10px;
+    font-size: 14px;
+}
+
+.instrument-content{
+    padding: 5px 10px;
+    font-size: 12px;
+    font-weight: 600;
+}
+/*End Dashboard*/

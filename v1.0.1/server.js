@@ -25,11 +25,11 @@ const db = mongoose.connect('mongodb://localhost/stockapp', {
 });
 
 // socket IO ======================================================================
-require('./app/sio.js')(io); // loading io sockets
+require('./app/sio.js').receiveIO(io); // passing io sockets to module
 
 // Oanda API ======================================================================
-const onada = require('./app/oanda.js');
-onada.requestData(io);
+const oanda = require('./app/oanda.js');
+oanda.requestData();
 
 // set up our express application
 app.use(cookieParser()); // read cookies (needed for auth)

@@ -5,10 +5,12 @@ const User = require('../models/user');
 
 //Get Homepage
 router.get('/', ensureAuthenticated, (req,res)=>{
+    //console.log(req.user.instruments);
     let obj = {
         username: req.user.username,
         accountID: req.user.accountID || "",
-        token: req.user.token || ""
+        token: req.user.token || "",
+        instruments: req.user.instruments || []
     };
     res.render('front', obj);
 });
@@ -41,7 +43,8 @@ router.get('/console/dashboard', ensureAuthenticated, (req,res)=>{
     let obj = {
         username: req.user.username,
         accountID: req.user.accountID || "",
-        token: req.user.token || ""
+        token: req.user.token || "",
+        instruments: req.user.instruments || []
     };
     res.render('dashboard', obj);
 });

@@ -87,17 +87,17 @@
 
         //change the color of the element for 1 second
         function priceDecrease(item){
-            item.css("background", "red");
+            item.css("color", "red");
             setTimeout(function(){
-            item.css("background", "white");
+            item.css("color", "black");
             }, 1000);
         }
 
         //change the color of the element for 1 second
         function priceIncrease(item){
-            item.css("background", "green");
+            item.css("color", "green");
             setTimeout(function(){
-            item.css("background", "white");
+            item.css("color", "black");
             }, 1000);
         }
 
@@ -106,20 +106,36 @@
             let previous_ask = ask_dom.html();
             let previous_bid = bid_dom.html();
 
+            if (previous_ask === ' -- '){
+                //console.log('clearing');
+                ask_dom.empty();
+                ask_dom.append(ask);
+                priceIncrease(ask_dom);
+            }
+            if (previous_bid === ' -- '){
+                //console.log('clearing');
+                bid_dom.empty();
+                bid_dom.append(bid);
+                priceIncrease(bid_dom);
+            }
             if (ask > previous_ask){
+                //console.log('ask increase');
                 ask_dom.empty();
                 ask_dom.append(ask);
                 priceIncrease(ask_dom);
             } else if (ask < previous_ask){
+                //console.log('ask decrease');
                 ask_dom.empty();
                 ask_dom.append(ask);
                 priceDecrease(ask_dom);
             }
             if (bid > previous_bid){
+                //console.log('bid increase');
                 bid_dom.empty();
                 bid_dom.append(bid);
                 priceIncrease(bid_dom);
             } else if (bid < previous_bid){
+                //console.log('bid decrease');
                 bid_dom.empty();
                 bid_dom.append(bid);
                 priceDecrease(bid_dom);
@@ -127,7 +143,7 @@
         }
 
         //check which instrument to data is referring to then call function to change it
-        function alterDash(ask, bid, instrument, $ask1, $ask2, $bid1, $bid2){
+        /*function alterDash(ask, bid, instrument, $ask1, $ask2, $bid1, $bid2){
             let ask_dom = null;
             let bid_dom = null;
             if (instrument == "EUR_USD") {
@@ -139,7 +155,7 @@
                 bid_dom = $bid2;
             appendDash(ask_dom, bid_dom, ask, bid);
             }
-        }
+        }*/
 
         if (path === '/'){
             //only loads if they are in account info area
@@ -174,10 +190,10 @@
             });
 
             if (path === "/console/dashboard"){
-                let $ask1 = $('#ask1');
-                let $bid1 = $('#bid1');
-                let $ask2 = $('#ask2');
-                let $bid2 = $('#bid2');
+                //let $ask1 = $('#ask1');
+                //let $bid1 = $('#bid1');
+                //let $ask2 = $('#ask2');
+                //let $bid2 = $('#bid2');
                 let socket = io.connect('http://localhost:8080');
                 socket.on("tick", (data)=>{
                     try{
@@ -190,9 +206,9 @@
                     let ask = JSON_data.asks[0].price;
                     let bid = JSON_data.bids[0].price;
                     let instrument = JSON_data.instrument;
-                    //console.log(`Instrument: ${instrument}, bid: ${bid}, ask: ${ask}`);
-                    alterDash(ask, bid, instrument, $ask1, $ask2, $bid1, $bid2);
-                    
+                    console.log(`Instrument: ${instrument}, bid: ${bid}, ask: ${ask}`);
+                    //alterDash(ask, bid, instrument, $ask1, $ask2, $bid1, $bid2);
+                    appendDash($(`.${instrument}.ask`), $(`.${instrument}.bid`), ask , bid);
                 });
 
             }

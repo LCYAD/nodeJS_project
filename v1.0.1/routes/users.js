@@ -53,7 +53,7 @@ router.post('/register', (req,res)=>{
                 let newUser = new User({
                     username: username.toLowerCase(),
                     password: password,
-                    app_access: false
+                    instruments: ["EUR_USD", "USD_JPY", "USD_CAD", "GBP_USD", "EUR_GBP"]
                 })
         
                 User.createUser(newUser, (err,user)=>{

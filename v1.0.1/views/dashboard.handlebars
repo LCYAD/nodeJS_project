@@ -6,7 +6,7 @@
     <div class="col-lg-12" style="margin: 20px 0px; height: 45px; border-bottom: 1px solid white;">
         <a href="/" style="color: black;">
             <i class="fa fa-user" aria-hidden="true"></i><span> Account</span><br/>
-    </a>
+        </a>
     </div>
     <div class="col-lg-12" style="margin: 10px 0px; height: 80px; border-bottom: 1px solid white;">
         <a href="/console/dashboard" style="color: black;">
@@ -15,18 +15,27 @@
     </div>
 </div>
 <div class="col-lg-10" id="console-panel">
-    <div class="col-lg-4" style="height: 200px">
-        <div class="col-lg-12">EUR_USD</div>
-        <div class="col-lg-6">
-            <div class="" id="bid1"> -- </div>
-            <div class="" id="ask1"> -- </div>
+    <div class="col-lg-4" id="instruments-area">
+        <div class="col-lg-10 col-lg-offset-1" id="instrument-menu">
+
         </div>
+        <div class="col-lg-10 col-lg-offset-1" id="instrument-board">
+            {{#each instruments}}
+                <div class="col-lg-6 instrument-box">
+                    <div class="col-lg-12 instrument-title">{{this}}</div>
+                    <div class="col-lg-6 instrument-subtitle">bid</div>
+                    <div class="col-lg-6 instrument-subtitle">ask</div>
+                    <div class="col-lg-6 instrument-content {{this}} bid"> -- </div>
+                    <div class="col-lg-6 instrument-content {{this}} ask"> -- </div>
+                </div>
+            {{/each}}
+        </div>
+        
     </div>
-        <div class="col-lg-4" style="height: 200px">
-        <div class="col-lg-12">USDJPY</div>
-        <div class="col-lg-6">
-            <div class="" id="bid2"> -- </div>
-            <div class="" id="ask2"> -- </div>
-        </div>
+    <div class="col-lg-8" id="chart-area">
+        
+    </div>
+    <div class="col-lg-12" id="position-area">
+
     </div>
 </div>

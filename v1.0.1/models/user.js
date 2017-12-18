@@ -11,6 +11,9 @@ let UserSchema = mongoose.Schema({
     },
     token:{
         type: String
+    },
+    instruments:{
+        type: [String]
     }
 });
 
