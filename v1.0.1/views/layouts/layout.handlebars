@@ -189,15 +189,15 @@
                     <div type="button" class="col-lg-12 btn btn-secondary instrument-title">${instrument}</div>
                     <div class="col-lg-6 instrument-subtitle">bid</div>
                     <div class="col-lg-6 instrument-subtitle">ask</div>
-                    <div type="button" class="col-lg-6 instrument-content ${instrument} bid"> -- </div>
-                    <div type="button" class="col-lg-6 instrument-content ${instrument} ask"> -- </div>
+                    <div type="button" class="col-lg-6 btn btn-secondary instrument-content ${instrument} bid" data-toggle="modal" data-target="#newOrder" onclick="buyOrder('${instrument}')"> -- </div>
+                    <div type="button" class="col-lg-6 btn btn-secondary instrument-content ${instrument} ask" data-toggle="modal" data-target="#newOrder" onclick="sellOrder('${instrument}')"> -- </div>
                 </div>`
             );
             $('#instrument-table').append(
                 `<div class="col-lg-12 table-box ${instrument}">
                     <div type="button" class="col-lg-6 btn btn-secondary instrument-title">${instrument}</div>
-                    <div type="button" class="col-lg-3 instrument-content ${instrument} bid"  style="margin-top: 3px;"> -- </div>
-                    <div type="button" class="col-lg-3 instrument-content ${instrument} ask"  style="margin-top: 3px;"> -- </div>
+                    <div type="button" class="col-lg-3 btn btn-secondary instrument-content ${instrument} bid" data-toggle="modal" data-target="#newOrder" style="margin-top: 3px;" onclick="buyOrder('${instrument}')"> -- </div>
+                    <div type="button" class="col-lg-3 btn btn-secondary instrument-content ${instrument} ask" data-toggle="modal" data-target="#newOrder" style="margin-top: 3px;" onclick="sellOrder('${instrument}')"> -- </div>
                 </div>`
             );
             // remove the option-box from the option bar
@@ -213,6 +213,135 @@
             );
             //emit the event that add the instrument to the database
             socket.emit('addInstrument', {username: $('#username').val(), instrument: instrument});
+        }
+
+        function buyOrder(instrument){
+            //append the current instrument onto the forms-instrument
+            //console.log(`Buying ${instrument}`);
+            let current_ask = $(`.${instrument}.ask`)[0].innerText;
+            let current_bid = $(`.${instrument}.bid`)[0].innerText;
+            $('#form-instruments').empty();
+            $('#form-instruments').append(
+                `
+                    <div class="col-lg-12 form-instrument-title">${instrument}</div>
+
+                    <button type="button" class="col-lg-5 col-lg-offset-1 btn btn-secondary instrument-sell-btn" onclick="changeSell('${instrument}')">
+                        <div class="col-lg-12 text-center">Sell</div>
+                        <div class="col-lg-12 text-center instrument-content ${instrument} bid">${current_bid}</div>
+                    </button>
+                    <button type="button" class="col-lg-5 btn btn-secondary instrument-buy-btn" onclick="changeBuy('${instrument}')" style="background:rgba(81, 81, 197, 0.507);">
+                        <div class="col-lg-12 text-center">Buy</div>
+                        <div class="col-lg-12 text-center instrument-content ${instrument} ask">${current_ask}</div>
+                `
+            );
+            $('#order-price').empty();
+            $('#order-price').append(
+                `
+                <div class="${instrument} ask" id="order-price-text">${current_ask}</div>
+                `
+            );
+            $('#market-order-btn').css('background', 'rgba(81, 81, 197, 0.507)');
+            $('#stop-order-btn').css('background', 'white');
+            $('#limit-order-btn').css('background', 'white');
+            $('.buy-sell').text('Buy');
+            $('#price-expiry').hide();
+            if(current_ask != ' -- '){
+                $('#price-input').val(`${current_ask}`);
+            }
+        }
+
+        function sellOrder(instrument){
+            //append the current instrument onto the forms-instrument
+            //console.log(`Selling ${instrument}`);
+            let current_ask = $(`.${instrument}.ask`)[0].innerText;
+            let current_bid = $(`.${instrument}.bid`)[0].innerText;
+            $('#form-instruments').empty();
+            $('#form-instruments').append(
+                `
+                    <div class="col-lg-12 form-instrument-title">${instrument}</div>
+
+                    <button type="button" class="col-lg-5 btn btn-secondary instrument-sell-btn" onclick="changeSell('${instrument}')" style="background:rgba(81, 81, 197, 0.507);">
+                        <div class="col-lg-12 text-center">Sell</div>
+                        <div class="col-lg-12 text-center instrument-content ${instrument} bid">${current_bid}</div>
+                    </button>
+                    <button type="button" class="col-lg-5 btn btn-secondary  instrument-buy-btn" onclick="changeBuy('${instrument}')">
+                        <div class="col-lg-12 text-center">Buy</div>
+                        <div class="col-lg-12 text-center instrument-content ${instrument} ask">${current_ask}</div>
+                    </button>
+                `
+            );
+            $('#order-price').empty();
+            $('#order-price').append(
+                `
+                <div class="${instrument} bid" id="order-price-text">${current_bid}</div>
+                `
+            );
+            $('#market-order-btn').css('background', 'rgba(81, 81, 197, 0.507)');
+            $('#stop-order-btn').css('background', 'white');
+            $('#limit-order-btn').css('background', 'white');
+            $('.buy-sell').text('Sell');
+            $('#price-expiry').hide();
+            if(current_bid != ' -- '){
+                $('#price-input').val(`${current_bid}`);
+            }
+        }
+
+        function changeBuy(instrument){
+            let current_ask = $(`.${instrument}.ask`)[0].innerText || ' -- ';
+            $('.instrument-buy-btn').css('background', 'rgba(81, 81, 197, 0.507)');
+            $('.instrument-sell-btn').css('background', 'white');
+            $('.buy-sell').text('Buy');
+            $('#order-price').empty();
+            $('#order-price').append(
+                `
+                <div class="${instrument} ask" id="order-price-text">${current_ask}</div>
+                `
+            );
+        }
+
+        function changeSell(instrument){
+            let current_bid = $(`.${instrument}.bid`)[0].innerText || ' -- ';
+            $('.instrument-sell-btn').css('background', 'rgba(81, 81, 197, 0.507)');
+            $('.instrument-buy-btn').css('background', 'white');
+            $('.buy-sell').text('Sell');
+            $('#order-price').empty();
+            $('#order-price').append(
+                `
+                <div class="${instrument} bid" id="order-price-text">${current_bid}</div>
+                `
+            );
+        }
+
+        function marketOrder(){
+            $('#market-order-btn').css('background', 'rgba(81, 81, 197, 0.507)');
+            $('#stop-order-btn').css('background', 'white');
+            $('#limit-order-btn').css('background', 'white');
+            $('#price-expiry').hide();
+        }
+
+        function stopOrder(){
+            $('#market-order-btn').css('background', 'white');
+            $('#stop-order-btn').css('background', 'rgba(81, 81, 197, 0.507)');
+            $('#limit-order-btn').css('background', 'white');      
+            $('#price-expiry').show();      
+        }
+
+        function limitOrder(){
+            $('#market-order-btn').css('background', 'white');
+            $('#stop-order-btn').css('background', 'white');
+            $('#limit-order-btn').css('background', 'rgba(81, 81, 197, 0.507)');            
+            $('#price-expiry').show();
+        }
+
+        function appendDropbox(data){
+            //console.log(data.accounts);
+            for (let index=0; index < data.accounts.length; index++){
+                $('#form-account-select').append(
+                    `
+                    <option value='${data.accounts[index].id}'>${data.accounts[index].id}</option>
+                    `
+                );
+            }
         }
 
         if (path === '/'){
@@ -240,7 +369,10 @@
             let link = `https://api-fxpractice.oanda.com/v3/accounts`;
             axios.get(link, {
                 headers: {'Authorization': `Bearer ${token}`}
-            }).then(()=>{}).catch(()=>{
+            }).then((user)=>{
+                //console.log(user.data);
+                appendDropbox(user.data);
+            }).catch(()=>{
                 location.replace("/");
             });
 
@@ -258,7 +390,7 @@
                         let ask = JSON_data.asks[0].price;
                         let bid = JSON_data.bids[0].price;
                         let instrument = JSON_data.instrument;
-                        console.log(`Instrument: ${instrument}, bid: ${bid}, ask: ${ask}`);
+                        //console.log(`Instrument: ${instrument}, bid: ${bid}, ask: ${ask}`);
                         appendDash($(`.${instrument}.ask`), $(`.${instrument}.bid`), ask , bid);
                     }
                     

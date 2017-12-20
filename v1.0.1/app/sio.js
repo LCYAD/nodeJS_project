@@ -6,7 +6,6 @@ module.exports.receiveIO  = (io) => {
     sio.on('connection', (socket)=>{
         console.log('A user has connected to the socket');
         socket.on('addInstrument', (data)=>{
-            //console.log(data);
             User.getUserByUsername(data.username, (err, user)=>{
                 if (err) throw err;
                 user.instruments.push(data.instrument);

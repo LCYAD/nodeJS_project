@@ -14,7 +14,11 @@
         </a>
     </div>
 </div>
+<!-- End Side Menu -->
+
+<!-- Main Dashboard Menu -->
 <div class="col-lg-10" id="console-panel">
+    <!-- Instrument Area -->
     <div class="col-lg-4" id="instruments-area">
         <div class="col-lg-12" id="instrument-menu">
             <div class="col-lg-4 col-lg-offset-4">
@@ -37,8 +41,8 @@
                     <div type="button" class="col-lg-12 btn btn-secondary instrument-title">{{this}}</div>
                     <div class="col-lg-6 instrument-subtitle">bid</div>
                     <div class="col-lg-6 instrument-subtitle">ask</div>
-                    <div type="button" class="col-lg-6 instrument-content {{this}} bid"> -- </div>
-                    <div type="button" class="col-lg-6 instrument-content {{this}} ask"> -- </div>
+                    <div type="button" class="col-lg-6 btn btn-secondary instrument-content {{this}} bid" data-toggle="modal" data-target="#newOrder" onclick="sellOrder('{{this}}')"> -- </div>
+                    <div type="button" class="col-lg-6 btn btn-secondary instrument-content {{this}} ask" data-toggle="modal" data-target="#newOrder" onclick="buyOrder('{{this}}')"> -- </div>
                 </div>
             {{/each}}
         </div>
@@ -47,8 +51,8 @@
             {{#each instruments}}
                 <div class="col-lg-12 table-box {{this}}">
                     <div type="button" class="col-lg-6 btn btn-secondary instrument-title">{{this}}</div>
-                    <div type="button" class="col-lg-3 instrument-content {{this}} bid"  style="margin-top: 3px;"> -- </div>
-                    <div type="button" class="col-lg-3 instrument-content {{this}} ask"  style="margin-top: 3px;"> -- </div>
+                    <div type="button" class="col-lg-3 btn btn-secondary instrument-content {{this}} bid" data-toggle="modal" data-target="#newOrder" style="margin-top: 3px;" onclick="sellOrder('{{this}}')"> -- </div>
+                    <div type="button" class="col-lg-3 btn btn-secondary instrument-content {{this}} ask" data-toggle="modal" data-target="#newOrder" style="margin-top: 3px;" onclick="buyOrder('{{this}}')"> -- </div>
                 </div>
             {{/each}}
         </div>
@@ -81,10 +85,110 @@
         </div>
          
     </div>
+    <!-- End Instrument Area -->
+
+    <!-- Chart Area -->
     <div class="col-lg-8" id="chart-area">
         
     </div>
+    <!-- End Chart Area --> 
+
+    <!-- Position Area -->
     <div class="col-lg-12" id="position-area">
 
     </div>
+    <!-- End Position Area -->
+
 </div>
+<!-- End Main Dashboard Menu -->
+
+<!-- Modal -->
+<div class="modal fade" id="newOrder" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+    
+        <!-- Modal Header -->
+        <div class="modal-header" style="padding: 0px; background: rgb(82, 79, 79);">
+            <h4 class="col-lg-6" style="color: white; font-weight: 800; padding: 10px 10px 10px 30px;"><i>New Order</i></h4>
+            <div class="col-lg-6 text-right" style="color: white; padding: 15px;">
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+        </div>
+        <!-- End Modal Header -->
+
+        <!-- Modal Body ================================================== -->
+
+        <!-- Instrument panel - changes when you click on different instruments -->
+        <div class="col-lg-12 text-center" id="form-instruments"></div>
+        <div class="col-lg-12" id="form-account" style="padding-top:5px;">
+            <span style="padding: 0px 10px;"><i>Accounts</i></span>
+            <select id="form-account-select"></select>
+        </div>
+        <!-- End Instrument panel -->
+
+        <!-- Market, Limit or Stop Order Selection -->
+        <div class="col-lg-12" id="form-type">
+            <div type="button" class="col-lg-4 btn btn-primary-outline text-center order-btn" id="market-order-btn" style="height: 100%; padding-top: 3px; border-right: 0.5px solid grey;" onclick="marketOrder()">Market</div>
+            <div type="button" class="col-lg-4 btn btn-primary-outline text-center order-btn" id="stop-order-btn" style="height: 100%; padding-top: 3px;" onclick="stopOrder()">Stop</div>
+            <div type="button" class="col-lg-4 btn btn-primary-outline text-center order-btn" id="limit-order-btn" style="height: 100%; padding-top: 3px; border-left: 0.5px solid grey;" onclick="limitOrder()">Limit</div>
+        </div>
+        <!-- End Market, Limit or Stop Order Selection -->
+        
+        <!-- Form area -->
+        <div class="col-lg-12" id="form-content">
+
+            <!-- Unit Select & show buy or sell with price -->
+            <div class="col-lg-6">
+                <input class="col-lg-12" id="order-unit" type="number" min="1" step="1" value ="1"/>
+                <div class="col-lg-3"><span class="buy-sell"></span></div>
+                <div class="col-lg-9" id="order-price">
+                    <span id="order-price-text"> -- </span>
+                </div>
+            </div>
+            <!-- End Unit Select & show buy or sell with price -->
+
+            <!-- Trade Value -->
+            <div class="col-lg-6" style="padding-left: 40px;">
+                <div class="col-lg-12" style="margin: 15px 0px;">Trade Value:</div>
+                <!-- 
+                    To solve the exchange problem, we need to first have the FX rate for different 
+                    currency for that day.  Then whenever order-price-text changes or the unit changes
+                    the unit value is re-calculated.
+                 -->
+                <div class="col-lg-12" id="trade-value"> HKD -- </div>
+            </div>
+            <!-- End Trade Value -->
+            
+        </div>
+        <!-- End Form area --> 
+
+        <!-- Price & Expiry (for Limit & Stop Order only) -->
+        <div class="col-lg-12" id="price-expiry">
+            <div class="col-lg-7">
+                <div class="col-lg-12" style="padding: 10px 0px;">Price</div>
+                <input type="number" id="price-input"/>
+            </div>
+            <div class="col-lg-5">
+                <div class="col-lg-12" style="padding: 10px 0px;">Expiry</div>
+                <select id="form-expiry" style="height: 30px;">
+                    <option value="GTD">Good till Day</option>
+                    <option value="GTC">Good till Cancel</option>
+                </select>
+            </div>
+        </div> 
+        <!-- End Price & Expiry -->
+
+        <!-- End Modal Body ========================================== -->
+
+        <!-- Modal Footer -->
+        <div class="modal-footer" style="text-align:center">
+            <button type="button" class="btn btn-primary" style="text-align:center; padding: 10px 60px; margin-top: 30px;">Submit</button>
+        </div>
+        <!-- End Modal Footer -->
+
+    </div>
+  </div>
+</div>
+<!-- End Modal -->

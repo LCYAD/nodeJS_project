@@ -77,6 +77,11 @@ body{
     margin-left: 15px;
 }
 
+#instrument-menu button{
+    outline:0px !important;
+}
+
+
 #chart-area{
     height: 60vh; 
     border: 1px solid grey; 
@@ -134,4 +139,62 @@ body{
     border-radius: 5px;
 }
 
+    /*Form Modal*/
+.form-instrument-title{
+    margin: 10px 0px;
+    font-size: 16px;
+    font-weight: 800;
+}
+
+.instrument-buy-btn, .instrument-sell-btn{
+    margin: 10px 10px 10px 5%;
+    border: 0.5px solid grey;
+    border-radius: 10px;
+    outline: 0px !important;
+}
+
+#form-type, #form-account{  
+    margin: 0px;
+    padding: 0px;
+}
+
+
+#form-type{
+    border-bottom: 1px solid grey;
+    margin-bottom: 10px;
+}
+
+#form-account{
+    border-top: 1px solid grey;
+    border-bottom:  1px solid grey;
+    padding-bottom: 10px;
+}
+
+.order-btn{
+    border-radius: 0px;
+    font-size: 12px;
+    padding-top: 5px;
+}
+
+#order-unit{
+    margin: 10px 0px;
+}
+
+.buy-sell, #order-price-text{
+    font-size: 10px;
+}
+
+#order-price-text{
+    padding-top: 6px;
+}
+
+#price-expiry{
+    margin: 10px 0px;
+    display:none;
+}
+
+#price-input::-webkit-inner-spin-button, #price-input::-webkit-outer-spin-button{
+    -webkit-appearance: none; 
+    margin: 0; 
+}
 /*End Dashboard*/
