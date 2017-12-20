@@ -38,7 +38,7 @@
         <div class="col-lg-12" id="instrument-board">
             {{#each instruments}}
                 <div class="col-lg-5 instrument-box {{this}}">
-                    <div type="button" class="col-lg-12 btn btn-secondary instrument-title">{{this}}</div>
+                    <div type="button" class="col-lg-12 btn btn-secondary instrument-title" onclick="enterNewChart('{{this}}')">{{this}}</div>
                     <div class="col-lg-6 instrument-subtitle">bid</div>
                     <div class="col-lg-6 instrument-subtitle">ask</div>
                     <div type="button" class="col-lg-6 btn btn-secondary instrument-content {{this}} bid" data-toggle="modal" data-target="#newOrder" onclick="sellOrder('{{this}}')"> -- </div>
@@ -50,7 +50,7 @@
         <div class="col-lg-12" id="instrument-table" style="display:none">
             {{#each instruments}}
                 <div class="col-lg-12 table-box {{this}}">
-                    <div type="button" class="col-lg-6 btn btn-secondary instrument-title">{{this}}</div>
+                    <div type="button" class="col-lg-6 btn btn-secondary instrument-title" onclick="enterNewChart('{{this}}')">{{this}}</div>
                     <div type="button" class="col-lg-3 btn btn-secondary instrument-content {{this}} bid" data-toggle="modal" data-target="#newOrder" style="margin-top: 3px;" onclick="sellOrder('{{this}}')"> -- </div>
                     <div type="button" class="col-lg-3 btn btn-secondary instrument-content {{this}} ask" data-toggle="modal" data-target="#newOrder" style="margin-top: 3px;" onclick="buyOrder('{{this}}')"> -- </div>
                 </div>
@@ -89,7 +89,115 @@
 
     <!-- Chart Area -->
     <div class="col-lg-8" id="chart-area">
-        
+        <button type="button" class="btn btn-default btn-xs" style="box-shadow: none" onclick="chartDisplay('live')">Live</button>
+        <button type="button" class="btn btn-default btn-xs" style="box-shadow: none" onclick="chartDisplay('historical')">Historical</button>
+        <div id="tickCandles"></div>
+        <div id="historicalCandles" style="display:none"></div>
+        <script>
+        chartTickCandles = new Highcharts.stockChart('tickCandles', {
+            rangeSelector:{
+              enabled: false
+            },
+            title: {
+                text: 'EUR_USD S50 Live Candles'
+            },
+            xAxis: [{
+                endOnTick: false,
+            }],
+            yAxis: {
+                opposite: true,
+            plotLines: [{
+                value: 0,
+                color: 'green',
+                width: 1,
+                label: {
+                    text: 'Recent asks price: '+this.value
+                }
+            }, {
+                value: 0,
+                color: 'red',
+                width: 1,
+                label: {
+                    text: 'Recent bids price: '+this.value
+                }
+            }]
+            },
+            series: [
+            {
+                name: 'Bids Price',
+                type: 'candlestick',
+                dataGrouping: {
+                  enabled: false,
+                },
+                data: [],
+                tooltip: {
+                    valueDecimals: 5
+                },
+            }
+          ]
+        });
+        </script>
+        <script>
+        chartHistoricalCandles = new Highcharts.stockChart('historicalCandles', {
+            title: {
+                text: 'EUR_USD Historical Daily Candles'
+            },
+            yAxis: {
+                opposite: true,
+                /*
+                plotLines: [{
+                    value: 1.179,
+                    color: 'green',
+                    dashStyle: 'shortdash',
+                    width: 2,
+                    label: {
+                        text: 'Recent bids price'
+                    }
+                }, {
+                    value: 1.177,
+                    color: 'red',
+                    dashStyle: 'shortdash',
+                    width: 2,
+                    label: {
+                        text: 'Recent asks price'
+                    }
+                }]*/
+            },
+            series : [{
+                name : 'Test',
+                type: 'candlestick',
+                dataGrouping: {
+                  enabled: false,
+              },
+                data : [],
+            }]
+        });
+        </script>
+        <script>
+            function chartDisplay(type) {
+                if (type=='live') {
+                    $('#tickCandles').css('display', 'block');
+                    $('#historicalCandles').css('display', 'none');
+                }
+                if (type=='historical') {
+                    $('#historicalCandles').css('display', 'block');
+                    $('#tickCandles').css('display', 'none');
+                }
+            }
+
+            function enterNewChart(instrument) {
+                //chart = instrument;
+                console.log(instrument);
+                chartTickCandles.title.update();
+                chartHistoricalCandles.title.update();
+                chartTickCandles.series[0].setData([]);
+                chartHistoricalCandles.series[0].setData([]);
+                historicalData(chartHistoricalCandles, instrument, '100' , 'D');
+                // chartTickCandles.redraw();
+                historicalData(chartTickCandles, instrument, '100' , 'S30');
+                ///chartHistoricalCandles.redraw();
+            }
+        </script>
     </div>
     <!-- End Chart Area --> 
 
@@ -180,11 +288,15 @@
         </div> 
         <!-- End Price & Expiry -->
 
+        <!-- Take Profit -->
+
+        <!-- End Take Profit -->
+
         <!-- End Modal Body ========================================== -->
 
         <!-- Modal Footer -->
         <div class="modal-footer" style="text-align:center">
-            <button type="button" class="btn btn-primary" style="text-align:center; padding: 10px 60px; margin-top: 30px;">Submit</button>
+            <button type="button" class="btn btn-primary" id="submit-order" onclick="submitOrder()">Submit</button>
         </div>
         <!-- End Modal Footer -->
 

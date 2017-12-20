@@ -197,4 +197,10 @@ body{
     -webkit-appearance: none; 
     margin: 0; 
 }
+
+#submit-order{
+    text-align: center; 
+    padding: 10px 60px; 
+    margin-top: 30px;
+}
 /*End Dashboard*/

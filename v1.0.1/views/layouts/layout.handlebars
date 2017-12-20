@@ -10,6 +10,11 @@
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.4.0/css/font-awesome.min.css" rel="stylesheet" type="text/css" />
     <link href="https://fonts.googleapis.com/css?family=Spectral+SC" rel="stylesheet">
     <!-- End CSS link -->
+
+    <!-- HighChart JS Library -->
+    <script src="https://code.highcharts.com/stock/highstock.js"></script>
+    <script src="https://code.highcharts.com/stock/modules/exporting.js"></script>
+    <!-- End HighChart JS Library -->
 </head>
 
 <body>
@@ -344,6 +349,73 @@
             }
         }
 
+        function submitOrder(){
+            //get all the data first - instrument, unit, type, price (if limit or stop)
+        }
+
+        //Historical Candle.js
+        var objectToArray = function(obj) {
+            var arr =[];
+            for(let o in obj) {
+                if (obj.hasOwnProperty(o)) {
+                arr.push(parseFloat(obj[o]));
+                }
+            }
+            return arr;
+        };
+
+        function historicalData(chart ,instrument, count, granularity) {
+            axios.get('https://api-fxpractice.oanda.com/v3/instruments/' + instrument + '/candles?count='+ count +'&price=B&granularity='+granularity, {
+            headers: {
+                "Authorization" : "Bearer " + '7244eeac343920574e1933d6b255b78d-68336798406e242f637742f580fcf7bd'
+            }
+            })
+            .then(function (response) {
+            console.log(response.data.candles);
+            //console.log(response[])
+            for (var i=0; i<response.data.candles.length; i++) {
+                var time = Date.parse(response.data.candles[i].time);
+                /*
+                var o = parseFloat(response.data.candles[i].bid.o);
+                var h = parseFloat(response.data.candles[i].bid.h);
+                var l = parseFloat(response.data.candles[i].bid.l);
+                var c = parseFloat(response.data.candles[i].bid.c);
+                */
+                var tohlc = objectToArray(response.data.candles[i].bid);
+                tohlc.unshift(time);
+                //chart.series[0].addPoint([time, o, h, l, c]);
+                chart.series[0].addPoint(tohlc, false);
+            }
+            if (chart == chartTickCandles) {
+                chart.setTitle({
+                text: instrument + ' S50 Live Candles'
+                });
+            }
+            if (chart == chartHistoricalCandles) {
+                chart.setTitle({
+                text: instrument + ' Historical Daily Candles'
+                });
+            }
+            chart.redraw();
+            /*
+            $.getJSON(json, function (data) {
+
+            });
+            */
+            console.log('for loop Done!');
+            /*
+            if (JSON.parse(data)['type']=='PRICE') {
+                chartLive.series[0].addPoint([Date.parse(JSON.parse(data)['time']), parseFloat(JSON.parse(data)['bids'][0]['price'])]);
+            }
+            */
+
+            })
+            .catch(function (error) {
+                console.log(error);
+            });
+        }
+        //End Historical Candle.js
+
         if (path === '/'){
             //only loads if they are in account info area
             let $misstoken = $('#miss-token');
@@ -378,6 +450,19 @@
 
             if (path === "/console/dashboard"){
                 socket = io.connect('http://localhost:8080');
+                
+                // for highcharts:
+                var candlesPeriod = 30000;
+                var candleDone = true;
+                var t0 = 0;
+                var open, h, l, c;
+                var asksPrice, bidsPrice;
+                var socketInstrument;
+
+                //call initial chart
+                historicalData(chartHistoricalCandles, 'EUR_USD', '100' , 'D');
+                historicalData(chartTickCandles, 'EUR_USD', '50' , 'S30');
+
                 socket.on("tick", (data)=>{
                     if (!data.includes('HEARTBEAT')){
                         try{
@@ -392,8 +477,58 @@
                         let instrument = JSON_data.instrument;
                         //console.log(`Instrument: ${instrument}, bid: ${bid}, ask: ${ask}`);
                         appendDash($(`.${instrument}.ask`), $(`.${instrument}.bid`), ask , bid);
-                    }
-                    
+
+                        // for highcharts:
+                        if (instrument == socketInstrument) {
+                            var time = Date.parse(JSON_data.time);
+                            if (JSON.parse(data)['type']=='PRICE') {
+                                asksPrice = parseFloat(ask);
+                                bidsPrice = parseFloat(bid);
+                                //console.log(chartTickCandles);
+                                //chartTickCandles.yAxis.plotLines.value[0] = bidsPrice;
+                                //chartTickCandles.yAxis.plotLines.value = asksPrice;
+                                /*
+                                // for Live Ticks:
+                                chartLive.series[0].addPoint([time, asksPrice]);
+                                chartLive.series[1].addPoint([time, bidsPrice]);
+                                */
+                                chartTickCandles.yAxis[0].options.plotLines[0].value = asksPrice;
+                                chartTickCandles.yAxis[0].update();
+                                chartTickCandles.yAxis[0].options.plotLines[1].value = bidsPrice;
+                                chartTickCandles.yAxis[0].update();
+
+                                if (time-t0 >= candlesPeriod && t0 != 0) {
+                                    chartTickCandles.series[0].addPoint([(time+t0)/2, o, h, l, c]);
+                                    candleDone = true;
+                                }
+
+                                // for Live Tick Candles:
+                                if (candleDone) {
+                                    o = h = l = c = bidsPrice;
+                                    t0 = time;
+                                    console.log('candleDone');
+                                    candleDone = false;
+                                }
+                                else {
+                                    if (bidsPrice > h && time-t0 <= candlesPeriod) {
+                                        h = bidsPrice;
+                                    }
+                                    if (bidsPrice < l && time-t0 <= candlesPeriod) {
+                                        l = bidsPrice;
+                                    }
+                                    c = bidsPrice;
+                                }
+                            }
+
+                            /*
+                            if (asksPrice && bidsPrice) {
+                                chartLive.series[0].addPoint([time, asksPrice]);
+                                chartLive.series[1].addPoint([time, bidsPrice]);
+                            }
+                            */
+                        }
+                        // End for highcharts
+                    } //End if !data.includes('HEARTBEAT')
                 });
 
             }
