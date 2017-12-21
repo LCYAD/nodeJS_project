@@ -190,17 +190,23 @@
         function addInstrument(instrument){
             //append the Instrument from the Board and Table
             $('#instrument-board').append(
-                `<div class="col-lg-5 instrument-box ${instrument}">
-                    <div type="button" class="col-lg-12 btn btn-secondary instrument-title">${instrument}</div>
-                    <div class="col-lg-6 instrument-subtitle">bid</div>
-                    <div class="col-lg-6 instrument-subtitle">ask</div>
-                    <div type="button" class="col-lg-6 btn btn-secondary instrument-content ${instrument} bid" data-toggle="modal" data-target="#newOrder" onclick="buyOrder('${instrument}')"> -- </div>
-                    <div type="button" class="col-lg-6 btn btn-secondary instrument-content ${instrument} ask" data-toggle="modal" data-target="#newOrder" onclick="sellOrder('${instrument}')"> -- </div>
-                </div>`
+                `
+                <div class="col-lg-5 instrument-box ${instrument}">
+                    <div type="button" class="col-lg-12 btn btn-secondary instrument-title" onclick="enterNewChart('${instrument}')">${instrument}</div>
+                    <div type="button" class="col-lg-6 btn btn-secondary"  data-toggle="modal" data-target="#newOrder" onclick="sellOrder('${instrument}')" style="padding: 5px 0px;">
+                        <div class="col-lg-12 instrument-subtitle">bid</div>
+                        <div  class="col-lg-12 instrument-content ${instrument} bid"> -- </div>
+                    </div>
+                    <div type="button" class="col-lg-6 btn btn-secondary"  data-toggle="modal" data-target="#newOrder" onclick="buyOrder('${instrument}')" style="padding: 5px 0px;">
+                        <div class="col-lg-12 instrument-subtitle">ask</div>
+                        <div class="col-lg-12 instrument-content ${instrument} ask"> -- </div>
+                    </div>
+                </div>
+                `
             );
             $('#instrument-table').append(
                 `<div class="col-lg-12 table-box ${instrument}">
-                    <div type="button" class="col-lg-6 btn btn-secondary instrument-title">${instrument}</div>
+                    <div type="button" class="col-lg-6 btn btn-secondary instrument-title" onclick="enterNewChart('${instrument}')">${instrument}</div>
                     <div type="button" class="col-lg-3 btn btn-secondary instrument-content ${instrument} bid" data-toggle="modal" data-target="#newOrder" style="margin-top: 3px;" onclick="buyOrder('${instrument}')"> -- </div>
                     <div type="button" class="col-lg-3 btn btn-secondary instrument-content ${instrument} ask" data-toggle="modal" data-target="#newOrder" style="margin-top: 3px;" onclick="sellOrder('${instrument}')"> -- </div>
                 </div>`
@@ -249,6 +255,7 @@
             $('#stop-order-btn').css('background', 'white');
             $('#limit-order-btn').css('background', 'white');
             $('.buy-sell').text('Buy');
+            $('#order-type').val('MARKET');
             $('#price-expiry').hide();
             if(current_ask != ' -- '){
                 $('#price-input').val(`${current_ask}`);
@@ -285,6 +292,7 @@
             $('#stop-order-btn').css('background', 'white');
             $('#limit-order-btn').css('background', 'white');
             $('.buy-sell').text('Sell');
+            $('#order-type').val('MARKET');
             $('#price-expiry').hide();
             if(current_bid != ' -- '){
                 $('#price-input').val(`${current_bid}`);
@@ -322,13 +330,15 @@
             $('#stop-order-btn').css('background', 'white');
             $('#limit-order-btn').css('background', 'white');
             $('#price-expiry').hide();
+            $('#order-type').val('MARKET');
         }
 
         function stopOrder(){
             $('#market-order-btn').css('background', 'white');
             $('#stop-order-btn').css('background', 'rgba(81, 81, 197, 0.507)');
             $('#limit-order-btn').css('background', 'white');      
-            $('#price-expiry').show();      
+            $('#price-expiry').show();   
+            $('#order-type').val('STOP');   
         }
 
         function limitOrder(){
@@ -336,12 +346,13 @@
             $('#stop-order-btn').css('background', 'white');
             $('#limit-order-btn').css('background', 'rgba(81, 81, 197, 0.507)');            
             $('#price-expiry').show();
+            $('#order-type').val('LIMIT');   
         }
 
-        function appendDropbox(data){
+        function appendDropList(item, data){
             //console.log(data.accounts);
-            for (let index=0; index < data.accounts.length; index++){
-                $('#form-account-select').append(
+            for (let index=data.accounts.length-1; index >= 0; index--){
+                item.append(
                     `
                     <option value='${data.accounts[index].id}'>${data.accounts[index].id}</option>
                     `
@@ -349,8 +360,218 @@
             }
         }
 
+        function submitTest(order, url){
+            axios({
+                method: 'post',
+                url: url,
+                headers: {
+                    'Authorization': 'bearer ' + token,
+                    'Content-Type': 'application/json'
+                    },
+                data: order
+            })
+            .then(function (response) {
+                //console.log(response);
+                //console.log(response.data);
+                //var output = response.data;
+                //console.log(output.lastTransactionID);
+                //console.log(output.orderCreateTransaction);
+                //console.log(output.orderCreateTransaction.type);
+                //console.log(output.orderCreateTransaction.units);
+                //console.log(output.orderFillTransaction);
+                // console.log(response.orderFillTransaction.type);
+                // console.log(response.orderFillTransaction.type.tradeOpened.price);
+                // console.log(response.orderFillTransaction.type.tradeOpened);
+                // console.log(response.orderFillTransaction.time);
+                if(response.statusText === "Created") {
+                    console.log('Order successfully filled');
+                    $('#newOrder').modal('toggle');
+                    //$('#mktOrderResponse').html(""); // Removed the content;
+                    //$('#mktOrderResponse').append(`Order successfully filled <br>`);
+                    //$('#mktOrderResponse').append(`Instrument: ${output.orderFillTransaction.instrument} |  Units : ${output.orderFillTransaction.units} |  Filled at : ${output.orderFillTransaction.price}`);
+                };
+            })
+            .catch(function (error) {
+                console.log(error);
+                //$('#mktOrderResponse').append("An error has occurred");
+            });
+        }
+
+        function axiosOrderSubmit(instrument, direction, units, type, url, price="", tif=""){
+            if (price === ""){
+                let order = { order: {
+                    'units': direction + units, 
+                    'instrument': instrument, 
+                    'timeInForce': "FOK", 
+                    'type': type,
+                    'positionFill': "DEFAULT"
+                }};
+                //console.log(order);
+                submitTest(order, url);
+            } else{
+                let order = { order: {
+                    'price': price,
+                    'units': direction + units, 
+                    'instrument': instrument, 
+                    'timeInForce': tif, 
+                    'type': type,
+                    'positionFill': "DEFAULT"
+                }};
+                //console.log(order);
+                submitTest(order, url);
+            }
+            
+        }
+
         function submitOrder(){
             //get all the data first - instrument, unit, type, price (if limit or stop)
+            let order_instrument = $('.form-instrument-title').text();
+            let order_direction = ($('.buy-sell').text() === 'Buy') ? "" : "-";
+            let order_unit = $('#order-unit').val();
+            let order_account = $('#form-account-select').val();
+            let order_type = $('#order-type').val();
+            let order_link = `https://api-fxpractice.oanda.com/v3/accounts/${order_account}/orders`;
+            if (order_type !== 'MARKET'){
+                let order_price = $('#price-input').val();
+                let order_expiry = $('#form-expiry').val();
+                axiosOrderSubmit(order_instrument, order_direction, order_unit, order_type, order_link, order_price, order_expiry);
+            } else {
+                axiosOrderSubmit(order_instrument, order_direction, order_unit, order_type, order_link);
+            }
+            
+            //console.log(`Entering ${order_type} Order: ${order_unit} of ${order_instrument} for account ${order_account} with direction equal ${order_direction}`);
+            //console.log(order_link);
+        }
+
+        function getOpenPosition(){
+            //get the account number from droplist
+            let current_account = $('#position-account-select').val();
+            $('#order-view').empty();
+            axios({
+                method: 'get',
+                url: `https://api-fxpractice.oanda.com/v3/accounts/${current_account}/summary`,
+                headers: {
+                    'Authorization': 'bearer ' + token,
+                    'Content-Type': 'application/json'
+                    }
+            }).then((res)=>{
+                console.log(res);
+            }).catch((err)=>{
+
+            });
+        }
+
+        function getPendingOrder(){
+            //get the account number from droplist
+            let current_account = $('#position-account-select').val();
+            $('#order-view-table').empty();
+            axios({
+                method: 'get',
+                url: `https://api-fxpractice.oanda.com/v3/accounts/${current_account}/pendingOrders`,
+                headers: {
+                    'Authorization': 'bearer ' + token,
+                    'Content-Type': 'application/json'
+                    }
+            }).then((res)=>{
+                console.log(res.data.orders);
+                $('#order-view-table').append(
+                    `
+                    <tr>
+                        <th>Ticket</th>
+                        <th>Market</th>
+                        <th>Units</th>
+                        <th>Type</th>
+                        <th>Price</th>
+                        <th>TimeInforce</th>
+                        <th></th>
+                    </tr>
+                    `
+                );
+                for (let order_index = res.data.orders.length-1; order_index >= 0; index--){
+                    console.log(res.data.orders[order_index]);
+                    if (res.data.orders[order_index].units < 0) {
+                        let order_type = 'SELL';
+                        let order_unit = res.data.orders[order_index].units*-1;
+                    } else {
+                        let order_type = 'BUY';
+                        let order_unit = res.data.orders[order_index].units;
+                    }
+                    $('#order-view-table').append(
+                        `
+                        <tr>
+                            <td>${res.data.orders[order_index].id}</td>
+                            <td>${res.data.orders[order_index].instrument}</td>
+                            <td>${order_unit}</td>
+                            <td>${order_type} ${res.data.orders[order_index].type}</td>
+                            <td>${res.data.orders[order_index].price}</td>
+                            <td>${res.data.orders[order_index].timeInForce}/td>
+                            <td><button class="btn-btn secondary" onclick="cancelOrder('${res.data.orders[order_index].id}')"><i class="fa fa-times" aria-hidden="true"></i></button></td>
+                        </tr>
+                        `
+                    );
+                }
+            }).catch((err)=>{
+
+            });
+        }
+
+        function getAccountSummary(){
+            //get account number from droplist
+            let current_account = $('#position-account-select').val();
+            $('#account-view').empty();
+            //console.log(current_account)
+            //append NAV, Unrealized P/L, Balance, Position Value, Margin Used, Margin Available, Leverage (marginrate)
+            axios({
+                method: 'get',
+                url: `https://api-fxpractice.oanda.com/v3/accounts/${current_account}/summary`,
+                headers: {
+                    'Authorization': 'bearer ' + token,
+                    'Content-Type': 'application/json'
+                    }
+            }).then((res)=>{
+                $('#account-view').append(
+                    `
+                    <div class="col-lg-5 col-lg-offset-1" style="padding: 5px 10px;">
+                        <div class="col-lg-6"><b>NAV</b></div>
+                        <div class="col-lg-6">HKD ${Number(res.data.account.NAV).toFixed(2)}</div>
+                    </div>
+                    <div class="col-lg-5" style="padding: 10px;">
+                        <div class="col-lg-6"><b>Unrealized P/L</b></div>
+                        <div class="col-lg-6">HKD ${Number(res.data.account.unrealizedPL).toFixed(2)}</div>
+                    </div>
+                    <div class="col-lg-5 col-lg-offset-1" style="padding: 5px 10px;">
+                        <div class="col-lg-6"><b>Balance</b></div>
+                        <div class="col-lg-6">HKD ${Number(res.data.account.balance).toFixed(2)}</div>
+                    </div>
+                    <div class="col-lg-5" style="padding: 10px;">
+                        <div class="col-lg-6"><b>Realized P/L</b></div>
+                        <div class="col-lg-6">HKD ${Number(res.data.account.pl).toFixed(2)}</div>
+                    </div>
+                    <div class="col-lg-5 col-lg-offset-1" style="padding: 5px 10px;">
+                        <div class="col-lg-6"><b>Position Value</b></div>
+                        <div class="col-lg-6">HKD ${Number(res.data.account.positionValue).toFixed(2)}</div>
+                    </div>
+                    <div class="col-lg-5" style="padding: 10px;">
+                        <div class="col-lg-6"><b>Margin Used</b></div>
+                        <div class="col-lg-6">HKD ${Number(res.data.account.marginUsed).toFixed(2)}</div>
+                    </div>
+                    <div class="col-lg-5 col-lg-offset-1" style="padding: 5px 10px;">
+                        <div class="col-lg-6"><b>Margin Available</b></div>
+                        <div class="col-lg-6">HKD ${Number(res.data.account.marginAvailable).toFixed(2)}</div>
+                    </div>
+                    <div class="col-lg-5" style="padding: 10px;">
+                        <div class="col-lg-6"><b>Leverage</b></div>
+                        <div class="col-lg-6">${1/(res.data.account.marginRate)} : 1</div>
+                    </div>
+                    `
+                );
+            }).catch((err)=>{
+                $('#account-view').append(
+                    `
+                    <div class="col-lg-12 text-center" style="color: red"><i>Cannot access account information</i></div>
+                    `
+                );
+            });
         }
 
         //Historical Candle.js
@@ -366,9 +587,10 @@
 
         function historicalData(chart ,instrument, count, granularity) {
             axios.get('https://api-fxpractice.oanda.com/v3/instruments/' + instrument + '/candles?count='+ count +'&price=B&granularity='+granularity, {
-            headers: {
-                "Authorization" : "Bearer " + '7244eeac343920574e1933d6b255b78d-68336798406e242f637742f580fcf7bd'
-            }
+                headers: {
+                    "Authorization" : "Bearer " + token,
+                    'Content-Type': 'application/json'
+                }
             })
             .then(function (response) {
             console.log(response.data.candles);
@@ -442,8 +664,11 @@
             axios.get(link, {
                 headers: {'Authorization': `Bearer ${token}`}
             }).then((user)=>{
-                //console.log(user.data);
-                appendDropbox(user.data);
+                console.log(user.data);
+                appendDropList($('#form-account-select'), user.data);
+                appendDropList($('#position-account-select'), user.data);
+                getAccountSummary();
+                getPendingOrder();
             }).catch(()=>{
                 location.replace("/");
             });
@@ -460,8 +685,12 @@
                 var socketInstrument;
 
                 //call initial chart
-                historicalData(chartHistoricalCandles, 'EUR_USD', '100' , 'D');
-                historicalData(chartTickCandles, 'EUR_USD', '50' , 'S30');
+                historicalData(chartHistoricalCandles, 'EUR_USD', '200' , 'D');
+                historicalData(chartTickCandles, 'EUR_USD', '100' , 'S30');
+
+                $('#position-account-select').on('change',()=>{
+                    getAccountSummary();
+                });
 
                 socket.on("tick", (data)=>{
                     if (!data.includes('HEARTBEAT')){

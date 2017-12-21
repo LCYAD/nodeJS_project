@@ -95,7 +95,7 @@ body{
 
 .instrument-box{
     margin: 5px;
-    padding: 5px 10px;
+    padding: 5px 0px;
     border: 0.5px solid black;
 }
 
@@ -138,6 +138,13 @@ body{
     margin: 5px 0px;
     border-radius: 5px;
 }
+
+    /*Chart Area*/
+#chart-area{
+    overflow-y: scroll;
+    padding-top: 20px;
+}
+    /*End Chart Area*/
 
     /*Form Modal*/
 .form-instrument-title{
@@ -203,4 +210,22 @@ body{
     padding: 10px 60px; 
     margin-top: 30px;
 }
+
+#position-panel{
+    padding: 0px 10px;
+}
+
+#account-info-display{
+    margin: 0px;
+    border: 1px solid rgba(128, 128, 128, 0.39);
+    height: 25vh;
+    overflow: auto;
+    background: rgba(128, 128, 128, 0.493);
+}
+
+#account-view, #order-view, #position-view{
+    padding-top: 20px;
+}
+
+
 /*End Dashboard*/
