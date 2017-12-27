@@ -3,7 +3,7 @@ const router = express.Router();
 
 const User = require('../models/user');
 
-const allInstrument = [ 
+const allInstrument = [
     'EUR_ZAR','EUR_HUF','EUR_NOK','USD_HUF','GBP_ZAR','NZD_SGD','CAD_JPY',
     'EUR_USD','EUR_JPY','NZD_CHF','USD_CAD','AUD_CAD','NZD_USD','HKD_JPY',
     'CHF_JPY','CAD_CHF','CAD_SGD','EUR_SGD','EUR_TRY','USD_JPY','CHF_HKD',
@@ -61,7 +61,7 @@ router.post('/', ensureAuthenticated, (req,res)=>{
     } else{
         res.redirect('/');
     }
-    
+
 });
 
 //Dashboard Get
@@ -75,7 +75,6 @@ router.get('/console/dashboard', ensureAuthenticated, (req,res)=>{
     };
     res.render('dashboard', obj);
 });
-
 
 function ensureAuthenticated(req, res, next){
     if(req.isAuthenticated()){

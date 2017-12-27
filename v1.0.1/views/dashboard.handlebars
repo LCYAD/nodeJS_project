@@ -2,7 +2,7 @@
 <input  id="token" value="{{token}}" style="display:none">
 
 <!-- Side Menu -->
-<div class="col-lg-2" id="menu-bar">
+<div class="col-lg-2 col-md-2 col-sm-2 col-xs-12" id="menu-bar">
     <div class="col-lg-12" style="margin: 20px 0px; height: 45px; border-bottom: 1px solid white;">
         <a href="/" style="color: black;">
             <i class="fa fa-user" aria-hidden="true"></i><span> Account</span><br/>
@@ -13,13 +13,15 @@
             <i class="fa fa-server" aria-hidden="true"></i><span> Dashboard</span><br/>
         </a>
     </div>
+    <div class="col-lg-12" style="margin-bottom: 10px;"><b>Recent News</b></div>
+    <div class="col-lg-12" id="news"></div>
 </div>
 <!-- End Side Menu -->
 
 <!-- Main Dashboard Menu -->
-<div class="col-lg-10" id="console-panel">
+<div class="col-lg-10 col-md-10 col-sm-10 col-xs-12" id="console-panel">
     <!-- Instrument Area -->
-    <div class="col-lg-4" id="instruments-area">
+    <div class="col-lg-4 col-md-4 col-sm-12" id="instruments-area">
         <div class="col-lg-12" id="instrument-menu">
             <div class="col-lg-4 col-lg-offset-4">
                 <button class="btn btn-primary menu-btn" onclick="changeTable()">
@@ -38,7 +40,7 @@
         <div class="col-lg-12" id="instrument-board">
             {{#each instruments}}
                 <div class="col-lg-5 instrument-box {{this}}">
-                    <div type="button" class="col-lg-12 btn btn-secondary instrument-title" onclick="enterNewChart('{{this}}')">{{this}}</div>
+                    <div type="button" class="col-lg-12 btn btn-secondary instrument-title hoverLive {{this}}" onmouseover="hoverTitle(event,'liveTick','{{this}}')" onmouseout="hoverTitle(event,'liveTick','{{this}}')" onclick="enterNewChart('{{this}}')">{{this}}</div>
                     <div type="button" class="col-lg-6 btn btn-secondary"  data-toggle="modal" data-target="#newOrder" onclick="sellOrder('{{this}}')" style="padding: 5px 0px;">
                         <div class="col-lg-12 instrument-subtitle">bid</div>
                         <div  class="col-lg-12 instrument-content {{this}} bid"> -- </div>
@@ -49,6 +51,116 @@
                     </div>
                 </div>
             {{/each}}
+            <div id="liveTick" style="z-index: 99; opacity: 0.85; position: fixed; display: none"></div>
+            <script>
+              var hoverInstrument;
+              function hoverTitle(e, divid, instrument){
+
+                var left  = e.clientX-150  + "px";
+                var top  = e.clientY+30  + "px";
+
+                var div = document.getElementById(divid);
+
+                div.style.left = left;
+                div.style.top = top;
+
+                hoverInstrument = instrument;
+                chartLive.series[0].setData([]);
+                chartLive.series[1].setData([]);
+                for (var i=0; i < liveObj[instrument].ask.length; i++) {
+                  chartLive.series[0].addPoint(liveObj[instrument].ask[i], false);
+                  chartLive.series[1].addPoint(liveObj[instrument].bid[i], false);
+                }
+                //console.log(liveObj[instrument].ask);
+                chartLive.setTitle({text: instrument});
+                chartLive.redraw();
+                chartLive.zoomOut();
+                $("#"+divid).toggle();
+                return false;
+              }
+
+              chartLive = new Highcharts.stockChart('liveTick', {
+                  chart: {
+                    type: 'line',
+                    height: 200,
+                    width: 150,
+                  },
+                  rangeSelector:{
+                    enabled: false,
+                    selected: 2
+                  },
+                  navigator: {
+                    enabled: false
+                  },
+                  title: {
+                      text: 'EUR/USD',
+                      style: {
+                        fontSize: 9,
+                      }
+                  },
+                  xAxis: {
+                      ordinal: false
+                  },
+                  yAxis: {
+                      tickWidth: 1,
+                      tickLength: 50,
+                      labels:{
+                        x: 20
+                      },
+                      plotLines: [{
+                          width: 0,
+                          value: 0,
+                          label: {
+                              text: '',
+                              align: 'right',
+                              textAlign: 'left',
+                              x: +20,
+                              style: {
+                                  fontSize: 8,
+                                  fontWeight: 'bold',
+                                  color: 'green',
+                                  zIndex: 99
+                              }
+                          }
+                  },
+                  {
+                          width: 0,
+                          value: 0,
+                          label: {
+                              text: '',
+                              align: 'right',
+                              textAlign: 'left',
+                              x: +20,
+                              style: {
+                                  fontSize: 8,
+                                  fontWeight: 'bold',
+                                  color: 'red',
+                                  zIndex: 99
+                              }
+                          }
+                        }]
+                  },        
+                  exporting: {
+                      enabled: false
+                  },
+                  series: [{
+                      name: 'Asks Price',
+                      data: [],
+                      tooltip: {
+                          valueDecimals: 5
+                      },
+                      color: 'green'
+                  },
+                  {
+                      name: 'Bids Price',
+                      data: [],
+                      tooltip: {
+                          valueDecimals: 5
+                      },
+                      color: 'red'
+                  }]
+              });
+          </script>
         </div>
 
         <div class="col-lg-12" id="instrument-table" style="display:none">
@@ -85,14 +197,14 @@
                     </div>
                 {{/each}}
             </div>
-            
+
         </div>
-         
+
     </div>
     <!-- End Instrument Area -->
 
     <!-- Chart Area -->
-    <div class="col-lg-8" id="chart-area">
+    <div class="col-lg-8 col-md-8 col-sm-12" id="chart-area">
         <button type="button" class="btn btn-default btn-xs" style="box-shadow: none" onclick="chartDisplay('live')">Live</button>
         <button type="button" class="btn btn-default btn-xs" style="box-shadow: none" onclick="chartDisplay('historical')">Historical</button>
         <div id="tickCandles"></div>
@@ -103,27 +215,50 @@
               enabled: false
             },
             title: {
-                text: 'EUR_USD S50 Live Candles'
+                text: 'EUR_USD S30 Live Candles'
             },
             xAxis: [{
                 endOnTick: false,
             }],
             yAxis: {
+                tickWidth: 1,
+                tickLength: 100,
+                labels:{
+                  x: 100
+                },
                 opposite: true,
             plotLines: [{
                 value: 0,
                 color: 'green',
                 width: 1,
                 label: {
-                    text: 'Recent asks price: '+this.value
-                }
+                    text: 'Ask: ',
+                    align: 'right',
+                    textAlign: 'left',
+                    x: -5,
+                    style: {
+                      fontSize: 10,
+                      fontWeight: 'bold',
+                      color: 'green'
+                    }
+                },
+                zIndex: 99
             }, {
                 value: 0,
                 color: 'red',
                 width: 1,
                 label: {
-                    text: 'Recent bids price: '+this.value
-                }
+                    text: 'Bid: ',
+                    align: 'right',
+                    textAlign: 'left',
+                    x: -5,
+                    style: {
+                      fontSize: 10,
+                      fontWeight: 'bold',
+                      color: 'red'
+                    }
+                },
+                zIndex: 99
             }]
             },
             series: [
@@ -146,7 +281,15 @@
             title: {
                 text: 'EUR_USD Historical Daily Candles'
             },
+            rangeSelector:{
+              enabled: false
+            },
             yAxis: {
+                tickWidth: 1,
+                tickLength: 100,
+                labels:{
+                  x: 100
+                },
                 opposite: true,
                 /*
                 plotLines: [{
@@ -178,6 +321,8 @@
         });
         </script>
         <script>
+            var currentInstrument = 'EUR_USD';
+
             function chartDisplay(type) {
                 if (type=='live') {
                     $('#tickCandles').css('display', 'block');
@@ -186,27 +331,75 @@
                 if (type=='historical') {
                     $('#historicalCandles').css('display', 'block');
                     $('#tickCandles').css('display', 'none');
+                    createButton(chartHistoricalCandles, 'Day', 120);
+                    createButton(chartHistoricalCandles, '4 H', 80);
+                    createButton(chartHistoricalCandles, '1 H', 40);
                 }
             }
 
+            newObjPair = {
+             'EUR_USD': 'EURUSD',
+             'GBP_USD': 'GBPUSD',
+             'USD_JPY': 'JPY',
+             'USD_CAD': 'CAD'
+             };
+
             function enterNewChart(instrument) {
-                //chart = instrument;
-                console.log(instrument);
+                currentInstrument = instrument;
+                socketInstrument = instrument;
+                candleDone = true;
+                t0=0;
+                //console.log(instrument);
                 chartTickCandles.title.update();
                 chartHistoricalCandles.title.update();
                 chartTickCandles.series[0].setData([]);
                 chartHistoricalCandles.series[0].setData([]);
-                historicalData(chartHistoricalCandles, instrument, '200' , 'D');
+                historicalData(chartHistoricalCandles, instrument, '100' , 'D');
                 // chartTickCandles.redraw();
                 historicalData(chartTickCandles, instrument, '100' , 'S30');
                 ///chartHistoricalCandles.redraw();
+                chartTickCandles.yAxis[0].options.plotLines[0].value = $(`.${instrument}.ask`).html();
+                chartTickCandles.yAxis[0].options.plotLines[0].label.text = 'Ask: '+$(`.${instrument}.ask`).html();
+                chartTickCandles.yAxis[0].options.plotLines[1].value = $(`.${instrument}.bid`).html();
+                chartTickCandles.yAxis[0].options.plotLines[1].label.text = 'Bid: '+$(`.${instrument}.bid`).html();
+                chartTickCandles.yAxis[0].update();
+
+                axios.get("https://feeds.finance.yahoo.com/rss/2.0/headline?s="+newObjPair[instrument]+"=X&region=US&lang=en-US", {
+                    headers: {
+                         'Access-Control-Allow-Origin': '*',
+                         'Access-Control-Allow-Methods' : 'GET,PUT,POST,DELETE,PATCH,OPTIONS'
+                    }
+               })
+               .then(function (response) {
+               //  console.log(response);
+               //  console.log(response.data)
+                 var x2js = new X2JS();
+                 var jsonObj = x2js.xml_str2json(response.data);
+                 console.log(jsonObj);
+                 console.log(jsonObj.rss.channel.item);
+                 $('#news').empty();
+
+                 for (var i=0; i<jsonObj.rss.channel.item.length; i++) {
+                     $('#news').append(
+                       "<a href='"+jsonObj.rss.channel.item[i].link+"' target='_blank' style='padding: 5px 0px;'>"+
+                           '<i class="fa fa-newspaper-o" aria-hidden="true"></i><span> '+jsonObj.rss.channel.item[i].title+'</span><br/>'+
+                       "</a>"
+                     );
+                 }
+               })
+               .catch(function (error) {
+                   console.log(error);
+                   $('#news').append(
+                     "<div style='color: red;'> Cannot Retrieve Information </div>"
+                   );
+               });
             }
         </script>
     </div>
-    <!-- End Chart Area --> 
+    <!-- End Chart Area -->
 
     <!-- Position Area -->
-    <div class="col-lg-12" id="position-area">
+    <div class="col-lg-12 col-md-12 col-sm-12" id="position-area">
         <!-- Position Panel -->
         <div class="col-lg-12" id="position-panel">
             <div class="col-lg-12" id="form-account" style="padding-top:10px; border: none;">
@@ -216,17 +409,13 @@
             <div class="col-lg-12" id="account-info-display">
                 <div class="col-lg-12" id="account-info-title">
                     <span style="padding: 0px 20px; font-size: 20px; font-weight:800;">Portfolio</span>
-                    <button class="btn btn-default" id="account-view-btn">Account Summary</button>
-                    <button class="btn btn-default" id="order-view-btn">Pending Orders</button>
-                    <button class="btn btn-default" id="position-view-btn">Open Positions</button>
+                    <button class="btn btn-default" id="account-view-btn" onclick="showPositionPanel('account-view')">Account Summary</button>
+                    <button class="btn btn-default" id="order-view-btn" onclick="showPositionPanel('order-view')">Pending Orders</button>
+                    <button class="btn btn-default" id="position-view-btn" onclick="showPositionPanel('position-view')">Open Positions</button>
                 </div>
                 <div class="col-lg-12" id="account-info-content">
-                    <div class="col-lg-12" id="account-view" style="display:none;"></div>
-                    <div class="col-lg-12" id="order-view">
-                        <table id="order-view-table">
-                            
-                        </table>
-                    </div>
+                    <div class="col-lg-12" id="account-view"></div>
+                    <div class="col-lg-12" id="order-view"></div>
                     <div class="col-lg-12" id="position-view"></div>
                 </div>
             </div>
@@ -242,6 +431,8 @@
 <!-- End Main Dashboard Menu -->
 
 <!-- Modal -->
+
+<!-- Modal New Order-->
 <div class="modal fade" id="newOrder" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
   <div class="modal-dialog" role="document">
     <div class="modal-content">
@@ -289,15 +480,15 @@
             </div>
             <!-- End Unit Select & show buy or sell with price -->
 
-            <!-- Trade Value -->
+            <!-- Trade Value (Disabled function) -->
             <div class="col-lg-6" style="padding-left: 40px;">
-                <div class="col-lg-12" style="margin: 15px 0px;">Trade Value:</div>
+                <!--<div class="col-lg-12" style="margin: 15px 0px;">Trade Value:</div>-->
                 <!-- 
                     To solve the exchange problem, we need to first have the FX rate for different 
                     currency for that day.  Then whenever order-price-text changes or the unit changes
                     the unit value is re-calculated.
                  -->
-                <div class="col-lg-12" id="trade-value"> HKD -- </div>
+                <!--<div class="col-lg-12" id="trade-value"> HKD  </div> -->
             </div>
             <!-- End Trade Value -->
             
@@ -326,8 +517,18 @@
 
         <!-- End Modal Body ========================================== -->
 
+        <!-- Modal Error -->
+        <div class="col-lg-12 text-center" id="newOrder-error-1" style="display:none">
+            <p style="color:red"><i>Cannot Open New Order! Invalid Input! Check your input!</i></p>
+        </div>
+
+        <div class="col-lg-12 text-center" id="newOrder-error-2" style="display:none">
+            <p style="color:red"><i>Unit must be positive!</i></p>
+        </div>
+        <!-- End Modal Error -->
+
         <!-- Modal Footer -->
-        <div class="modal-footer" style="text-align:center">
+        <div class="modal-footer" id="close-position-choice" style="text-align:center">
             <button type="button" class="btn btn-primary" id="submit-order" onclick="submitOrder()">Submit</button>
         </div>
         <!-- End Modal Footer -->
@@ -335,4 +536,33 @@
     </div>
   </div>
 </div>
+<!-- End Modal New Order-->
+
+<!-- Modal Close Position -->
+<div class="modal fade" id="closePosition" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+    
+        <!-- Modal Header -->
+        <div class="modal-header" style="padding: 0px; background: rgb(82, 79, 79);">
+            <h4 class="col-lg-6" style="color: white; font-weight: 800; padding: 10px 10px 10px 30px;"><i>Close Position</i></h4>
+            <div class="col-lg-6 text-right" style="color: white; padding: 15px;">
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+        </div>
+        <!-- End Modal Header -->
+
+        <!-- Modal Footer -->
+        <div class="modal-footer" style="text-align:center" id="closePosition-modal-content">
+            
+        </div>
+        <!-- End Modal Footer -->
+
+    </div>
+  </div>
+</div>
+<!-- End Modal Close Position -->
+
 <!-- End Modal -->

@@ -13,6 +13,7 @@ const bodyParser   = require('body-parser');
 const session      = require('express-session');
 const expressValidator = require('express-validator');
 const passportOneSessionPerUser = require('passport-one-session-per-user');
+const cors = require('cors');
 
 // Mongo DB
 const mongo = require('mongodb');
@@ -33,6 +34,8 @@ oanda.requestData();
 
 // set up our express application
 app.use(cookieParser()); // read cookies (needed for auth)
+app.use(cors());
+app.options('*', cors());
 
 //BodyParser Middleware
 app.use(bodyParser.json());

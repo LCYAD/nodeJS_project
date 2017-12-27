@@ -2,9 +2,9 @@
 <html>
 <head>
     <!-- CSS link -->
-    <link href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" 
-        rel="stylesheet" 
-        integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" 
+    <link href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css"
+        rel="stylesheet"
+        integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u"
         crossorigin="anonymous">
     <link href="/css/main.css" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.4.0/css/font-awesome.min.css" rel="stylesheet" type="text/css" />
@@ -15,16 +15,19 @@
     <script src="https://code.highcharts.com/stock/highstock.js"></script>
     <script src="https://code.highcharts.com/stock/modules/exporting.js"></script>
     <!-- End HighChart JS Library -->
+
+    <!--X2JS-->
+    <script src="https://cdn.rawgit.com/abdmob/x2js/master/xml2json.js"></script>
 </head>
 
 <body>
-   
+
     <div class="container" style="margin: 0px; width: 100%; height: 100%;">
         <div class="row">
             <div class="header clearfix"  style="background: rgba(34, 34, 119, 0.63); color: black; padding: 5px 20px;">
             <nav>
                 <ul class="nav nav-pills pull-right">
-                
+
                 {{#if user}}
                 <li class="nav-item">
                     <a class="nav-link" href="/users/logout">Logout</a>
@@ -42,11 +45,11 @@
                 <h3 style="margin: 10px; font-family: 'Spectral SC', serif;">Trader's Den <sub style="font-size: 11px;">powered by &reg; Oanada</sub></h3>
             </div>
         </div>
-        
+
 
         <div class="row">
             <div class="col-lg-12" style="padding: 0px;">
-                
+
                 {{#if success_msg}}
                 <div class="col-lg-6 col-lg-offset-3">
                     <div class="alert alert-success"  style="margin-top: 10px;">{{success_msg}}</div>
@@ -66,16 +69,16 @@
             </div>
         </div>
 
-    </div> <!-- /container -->   
-   
+    </div> <!-- /container -->
+
     <!-- JS script goes below -->
     <script src="https://code.jquery.com/jquery-3.2.1.min.js" integrity="sha256-hwg4gsxgFZhOsEEamdOYGBf13FyQuiTwlAQgxVSNgt4="
         crossorigin="anonymous"></script>
-    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js" integrity="sha384-Tc5IQib027qvyjSMfHjOMaLkfuWVxZxUPnCJA7l2mCWNIpG9mGCD8wGNIcPD7Txa" 
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js" integrity="sha384-Tc5IQib027qvyjSMfHjOMaLkfuWVxZxUPnCJA7l2mCWNIpG9mGCD8wGNIcPD7Txa"
         crossorigin="anonymous"></script>
     <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/2.0.3/socket.io.js"></script>
-    <!-- End JS Library-->		
+    <!-- End JS Library-->
 
     <!-- Custom JS script -->
     <script>
@@ -183,7 +186,9 @@
                     </button>
                 </div>`
             );
-                        //emit the event that remove the instrument to the database
+
+            delete liveObj[instrument];
+            //emit the event that remove the instrument to the database
             socket.emit('removeInstrument', {username: $('#username').val(), instrument: instrument});
         }
 
@@ -192,7 +197,7 @@
             $('#instrument-board').append(
                 `
                 <div class="col-lg-5 instrument-box ${instrument}">
-                    <div type="button" class="col-lg-12 btn btn-secondary instrument-title" onclick="enterNewChart('${instrument}')">${instrument}</div>
+                    <div type="button" class="col-lg-12 btn btn-secondary instrument-title hoverLive ${instrument}" onmouseover="hoverTitle(event,'liveTick','${instrument}')" onmouseout="hoverTitle(event,'liveTick','${instrument}')" onclick="enterNewChart('${instrument}')">${instrument}</div>
                     <div type="button" class="col-lg-6 btn btn-secondary"  data-toggle="modal" data-target="#newOrder" onclick="sellOrder('${instrument}')" style="padding: 5px 0px;">
                         <div class="col-lg-12 instrument-subtitle">bid</div>
                         <div  class="col-lg-12 instrument-content ${instrument} bid"> -- </div>
@@ -223,6 +228,9 @@
                 </div>`
             );
             //emit the event that add the instrument to the database
+            liveObj[instrument] = [];
+            liveObj[instrument].ask = [];
+            liveObj[instrument].bid = [];
             socket.emit('addInstrument', {username: $('#username').val(), instrument: instrument});
         }
 
@@ -336,17 +344,17 @@
         function stopOrder(){
             $('#market-order-btn').css('background', 'white');
             $('#stop-order-btn').css('background', 'rgba(81, 81, 197, 0.507)');
-            $('#limit-order-btn').css('background', 'white');      
-            $('#price-expiry').show();   
-            $('#order-type').val('STOP');   
+            $('#limit-order-btn').css('background', 'white');
+            $('#price-expiry').show();
+            $('#order-type').val('STOP');
         }
 
         function limitOrder(){
             $('#market-order-btn').css('background', 'white');
             $('#stop-order-btn').css('background', 'white');
-            $('#limit-order-btn').css('background', 'rgba(81, 81, 197, 0.507)');            
+            $('#limit-order-btn').css('background', 'rgba(81, 81, 197, 0.507)');
             $('#price-expiry').show();
-            $('#order-type').val('LIMIT');   
+            $('#order-type').val('LIMIT');
         }
 
         function appendDropList(item, data){
@@ -386,23 +394,28 @@
                 if(response.statusText === "Created") {
                     console.log('Order successfully filled');
                     $('#newOrder').modal('toggle');
+                    getPendingOrder();
+                    getOpenPosition();
+                    getAccountSummary();
                     //$('#mktOrderResponse').html(""); // Removed the content;
                     //$('#mktOrderResponse').append(`Order successfully filled <br>`);
                     //$('#mktOrderResponse').append(`Instrument: ${output.orderFillTransaction.instrument} |  Units : ${output.orderFillTransaction.units} |  Filled at : ${output.orderFillTransaction.price}`);
                 };
             })
             .catch(function (error) {
-                console.log(error);
-                //$('#mktOrderResponse').append("An error has occurred");
+                $('#newOrder-error-1').show();
+                setTimeout(()=>{
+                    $('#newOrder-error-1').hide();
+                }, 5000);
             });
         }
 
         function axiosOrderSubmit(instrument, direction, units, type, url, price="", tif=""){
             if (price === ""){
                 let order = { order: {
-                    'units': direction + units, 
-                    'instrument': instrument, 
-                    'timeInForce': "FOK", 
+                    'units': direction + units,
+                    'instrument': instrument,
+                    'timeInForce': "FOK",
                     'type': type,
                     'positionFill': "DEFAULT"
                 }};
@@ -411,16 +424,16 @@
             } else{
                 let order = { order: {
                     'price': price,
-                    'units': direction + units, 
-                    'instrument': instrument, 
-                    'timeInForce': tif, 
+                    'units': direction + units,
+                    'instrument': instrument,
+                    'timeInForce': tif,
                     'type': type,
                     'positionFill': "DEFAULT"
                 }};
                 //console.log(order);
                 submitTest(order, url);
             }
-            
+
         }
 
         function submitOrder(){
@@ -431,40 +444,92 @@
             let order_account = $('#form-account-select').val();
             let order_type = $('#order-type').val();
             let order_link = `https://api-fxpractice.oanda.com/v3/accounts/${order_account}/orders`;
-            if (order_type !== 'MARKET'){
-                let order_price = $('#price-input').val();
-                let order_expiry = $('#form-expiry').val();
-                axiosOrderSubmit(order_instrument, order_direction, order_unit, order_type, order_link, order_price, order_expiry);
-            } else {
-                axiosOrderSubmit(order_instrument, order_direction, order_unit, order_type, order_link);
+            if (Number(order_unit) < 0){
+                $('#newOrder-error-2').show();
+                setTimeout(()=>{
+                    $('#newOrder-error-2').hide();
+                }, 5000);
+            } else{
+                if (order_type !== 'MARKET'){
+                    let order_price = $('#price-input').val();
+                    let order_expiry = $('#form-expiry').val();
+                    axiosOrderSubmit(order_instrument, order_direction, order_unit, order_type, order_link, order_price, order_expiry);
+                } else {
+                    axiosOrderSubmit(order_instrument, order_direction, order_unit, order_type, order_link);
+                }
+
             }
             
             //console.log(`Entering ${order_type} Order: ${order_unit} of ${order_instrument} for account ${order_account} with direction equal ${order_direction}`);
             //console.log(order_link);
         }
 
+
         function getOpenPosition(){
             //get the account number from droplist
             let current_account = $('#position-account-select').val();
-            $('#order-view').empty();
+            $('#position-view').empty();
             axios({
                 method: 'get',
-                url: `https://api-fxpractice.oanda.com/v3/accounts/${current_account}/summary`,
+                url: `https://api-fxpractice.oanda.com/v3/accounts/${current_account}/openPositions`,
                 headers: {
                     'Authorization': 'bearer ' + token,
                     'Content-Type': 'application/json'
                     }
             }).then((res)=>{
-                console.log(res);
+                //console.log(res.data.positions);
+                $('#position-view').append(
+                    `
+                    <table id="position-view-table">
+                    <tr>
+                        <th class="openPosition-header">Market</th>
+                        <th class="openPosition-header">Units</th>
+                        <th class="openPosition-header">Type</th>
+                        <th class="openPosition-header">Price</th>
+                        <th class="openPosition-header"></th>
+                    </tr>
+                    </table>
+                    `
+                );
+                let pos_type;
+                let pos_unit;
+                let pos_price
+                for (let pos_index = res.data.positions.length-1; pos_index >= 0; pos_index--){
+                    if (Number(res.data.positions[pos_index].long.units) < Number(res.data.positions[pos_index].short.units)*-1) {
+                        pos_type = 'SHORT';
+                        pos_unit = Number(res.data.positions[pos_index].short.units) * -1;
+                        pos_price = res.data.positions[pos_index].short.averagePrice;
+                    } else {
+                        pos_type = 'LONG';
+                        pos_unit = res.data.positions[pos_index].long.units;
+                        pos_price = res.data.positions[pos_index].long.averagePrice;
+                    }
+                    $('#position-view-table').append(
+                        `
+                        <tr>
+                            <td class="pendingOrder-content">${res.data.positions[pos_index].instrument}</td>
+                            <td class="pendingOrder-content">${pos_unit}</td>
+                            <td class="pendingOrder-content">${pos_type}</td>
+                            <td class="pendingOrder-content">${pos_price}</td>
+                            <td class="pendingOrder-content"><button title="Close Position" class="btn-btn secondary" data-toggle="modal" data-target="#closePosition" onclick="loadModal('${current_account}','${res.data.positions[pos_index].instrument}', '${pos_type}')"><i class="fa fa-times" aria-hidden="true"></i></button></td>
+                        </tr>
+                        `
+                    );
+                }
             }).catch((err)=>{
-
+                $('#position-view').append(
+                    `
+                    <div class="col-lg-12 text-center" style="color: red"><i>Cannot access Open Position information</i></div>
+                    `
+                );
             });
         }
 
+        //to be added to man's code
         function getPendingOrder(){
             //get the account number from droplist
             let current_account = $('#position-account-select').val();
-            $('#order-view-table').empty();
+            $('#order-view').empty();
             axios({
                 method: 'get',
                 url: `https://api-fxpractice.oanda.com/v3/accounts/${current_account}/pendingOrders`,
@@ -473,46 +538,129 @@
                     'Content-Type': 'application/json'
                     }
             }).then((res)=>{
-                console.log(res.data.orders);
-                $('#order-view-table').append(
+                //console.log(res.data.orders);
+                $('#order-view').append(
                     `
+                    <table id="order-view-table">
                     <tr>
-                        <th>Ticket</th>
-                        <th>Market</th>
-                        <th>Units</th>
-                        <th>Type</th>
-                        <th>Price</th>
-                        <th>TimeInforce</th>
-                        <th></th>
+                        <th class="pendingOrder-header">Ticket</th>
+                        <th class="pendingOrder-header">Market</th>
+                        <th class="pendingOrder-header">Units</th>
+                        <th class="pendingOrder-header">Type</th>
+                        <th class="pendingOrder-header">Price</th>
+                        <th class="pendingOrder-header">TimeInforce</th>
+                        <th class="pendingOrder-header"></th>
                     </tr>
+                    </table>
                     `
                 );
-                for (let order_index = res.data.orders.length-1; order_index >= 0; index--){
-                    console.log(res.data.orders[order_index]);
+                let order_type;
+                let order_unit;
+                for (let order_index = res.data.orders.length-1; order_index >= 0; order_index--){
                     if (res.data.orders[order_index].units < 0) {
-                        let order_type = 'SELL';
-                        let order_unit = res.data.orders[order_index].units*-1;
+                        order_type = 'SELL';
+                        order_unit = Number(res.data.orders[order_index].units) * -1;
                     } else {
-                        let order_type = 'BUY';
-                        let order_unit = res.data.orders[order_index].units;
+                        order_type = 'BUY';
+                        order_unit = res.data.orders[order_index].units;
                     }
                     $('#order-view-table').append(
                         `
                         <tr>
-                            <td>${res.data.orders[order_index].id}</td>
-                            <td>${res.data.orders[order_index].instrument}</td>
-                            <td>${order_unit}</td>
-                            <td>${order_type} ${res.data.orders[order_index].type}</td>
-                            <td>${res.data.orders[order_index].price}</td>
-                            <td>${res.data.orders[order_index].timeInForce}/td>
-                            <td><button class="btn-btn secondary" onclick="cancelOrder('${res.data.orders[order_index].id}')"><i class="fa fa-times" aria-hidden="true"></i></button></td>
+                            <td class="pendingOrder-content">${res.data.orders[order_index].id}</td>
+                            <td class="pendingOrder-content">${res.data.orders[order_index].instrument}</td>
+                            <td class="pendingOrder-content">${order_unit}</td>
+                            <td class="pendingOrder-content">${order_type} ${res.data.orders[order_index].type}</td>
+                            <td class="pendingOrder-content">${res.data.orders[order_index].price}</td>
+                            <td class="pendingOrder-content">${res.data.orders[order_index].timeInForce}</td>
+                            <td class="pendingOrder-content"><button title="Cancel Order" class="btn-btn secondary" onclick="cancelOrder('${current_account}','${res.data.orders[order_index].id}')"><i class="fa fa-times" aria-hidden="true"></i></button></td>
                         </tr>
                         `
                     );
                 }
             }).catch((err)=>{
-
+                $('#order-view').append(
+                    `
+                    <div class="col-lg-12 text-center" style="color: red"><i>Cannot access Pending Order information</i></div>
+                    `
+                );
             });
+        }
+
+        function showPositionPanel(panel){
+            switch (panel){
+                case "account-view":
+                    $('#account-view').show();
+                    $('#position-view').hide();
+                    $('#order-view').hide();
+                    break;
+                case "order-view":
+                    $('#order-view').show();
+                    $('#account-view').hide();
+                    $('#position-view').hide();
+                    break;
+                case "position-view":
+                    $('#position-view').show();
+                    $('#account-view').hide();
+                    $('#order-view').hide();
+                    break;
+            }
+        }
+
+        function cancelOrder(account,order){
+            //console.log(order);
+            axios({
+                method: 'put',
+                url: `https://api-fxpractice.oanda.com/v3/accounts/${account}/orders/${order}/cancel`,
+                headers: {
+                    'Authorization': 'bearer ' + token,
+                    'Content-Type': 'application/json'
+                    }
+            }).then((res)=>{
+                getPendingOrder();
+            }).catch((err)=>{
+                console.log(err);
+            });
+        }
+
+        function closePosition(account, instrument, type){
+            let data;
+            if (type === "LONG"){
+                data = {
+                    "longUnits": "ALL"
+                }
+            } else{
+                data = {
+                    "shortUnits": "ALL"
+                }
+            }
+            axios({
+                method: 'put',
+                url: `https://api-fxpractice.oanda.com/v3/accounts/${account}/positions/${instrument}/close`,
+                data: data,
+                headers: {
+                    'Authorization': 'bearer ' + token,
+                    'Content-Type': 'application/json'
+                    }
+            }).then((res)=>{
+                getOpenPosition();
+                getAccountSummary();
+                $('#closePosition').modal('toggle');
+            }).catch((err)=>{
+                console.log(err);
+            });
+        }
+
+        function loadModal(account, instrument, type){
+            $('#closePosition-modal-content').empty();
+            $('#closePosition-modal-content').append(
+                `
+                <div class="col-lg-12" style="padding: 5px 0px;">Are you sure you want to close this position?</div>
+                <div class="col-lg-12" style="padding: 20px 0px;"><b>${instrument}</b></div>
+                <button type="button" class="btn btn-primary" onclick="closePosition('${account}', '${instrument}', '${type}')" style="width:100px;">Yes</button>
+                <button type="button" class="btn btn-primary" data-dismiss="modal" aria-label="Close" style="width:100px; background:red;">No</button>
+                `
+            );
         }
 
         function getAccountSummary(){
@@ -585,6 +733,26 @@
             return arr;
         };
 
+        // create granularity button in chart:
+        function createButton(chart, buttonText, x) {
+          normalState = {
+                 fill: 'white',
+                 r: 2,
+                 padding: 3
+          }
+          hoverState = {
+                 fill: 'rgba(102, 133, 194, 0.3)'
+          }
+
+          var Button = chart.renderer.button(buttonText, x, 10, function(){
+            if (buttonText == 'Day') { var granularity = 'D';}
+            if (buttonText == '4 H') { var granularity = 'H4';}
+            if (buttonText == '1 H') { var granularity = 'H1';}
+            chart.series[0].setData([]);
+            historicalData(chart , currentInstrument, '100', granularity);
+          }, normalState, hoverState, null, null).add();
+        }
+
         function historicalData(chart ,instrument, count, granularity) {
             axios.get('https://api-fxpractice.oanda.com/v3/instruments/' + instrument + '/candles?count='+ count +'&price=B&granularity='+granularity, {
                 headers: {
@@ -593,7 +761,7 @@
                 }
             })
             .then(function (response) {
-            console.log(response.data.candles);
+            //console.log(response.data.candles);
             //console.log(response[])
             for (var i=0; i<response.data.candles.length; i++) {
                 var time = Date.parse(response.data.candles[i].time);
@@ -610,7 +778,7 @@
             }
             if (chart == chartTickCandles) {
                 chart.setTitle({
-                text: instrument + ' S50 Live Candles'
+                text: instrument + ' S30 Live Candles'
                 });
             }
             if (chart == chartHistoricalCandles) {
@@ -619,6 +787,7 @@
                 });
             }
             chart.redraw();
+            chart.zoomOut();
             /*
             $.getJSON(json, function (data) {
 
@@ -643,7 +812,7 @@
             let $misstoken = $('#miss-token');
             let $invalidinfo = $('#invalid-info');
             $('#enter-app').on('click', ()=>{
-                console.log(token);
+                //console.log(token);
                 if (!token){showWarning($misstoken)};
                 if (token){
                     //check to see if there is an account or not
@@ -664,37 +833,91 @@
             axios.get(link, {
                 headers: {'Authorization': `Bearer ${token}`}
             }).then((user)=>{
-                console.log(user.data);
+                //console.log(user.data);
                 appendDropList($('#form-account-select'), user.data);
                 appendDropList($('#position-account-select'), user.data);
                 getAccountSummary();
                 getPendingOrder();
+                getOpenPosition();
             }).catch(()=>{
                 location.replace("/");
             });
 
             if (path === "/console/dashboard"){
-                socket = io.connect('http://localhost:8080');
-                
+
+                //Testing
+                //socket = io.connect('http://localhost:8080/');
+
+                //Server
+                socket = io.connect('http://159.89.204.132:8080/');
+
+                showPositionPanel('account-view');
+
                 // for highcharts:
                 var candlesPeriod = 30000;
                 var candleDone = true;
                 var t0 = 0;
-                var open, h, l, c;
+                var o, h, l, c;
                 var asksPrice, bidsPrice;
                 var socketInstrument;
+                var liveObj = {};
+                // check the instrument onboard , and create data array in the object
+                $('div.hoverLive').each(function(i){
+                     //console.log($(this).html());
+                     liveObj[$(this).html()] = [];
+                     liveObj[$(this).html()].ask = [];
+                     liveObj[$(this).html()].bid = [];
+                     //console.log(liveObj);
+                });
 
                 //call initial chart
-                historicalData(chartHistoricalCandles, 'EUR_USD', '200' , 'D');
-                historicalData(chartTickCandles, 'EUR_USD', '100' , 'S30');
+                historicalData(chartHistoricalCandles, 'EUR_USD', '100' , 'D');
+                historicalData(chartTickCandles, 'EUR_USD', '50' , 'S30');
 
                 $('#position-account-select').on('change',()=>{
                     getAccountSummary();
+                    getPendingOrder();
+                    getOpenPosition();
                 });
 
+                socketInstrument = 'EUR_USD';
+
                 socket.on("tick", (data)=>{
+                    //console.log(data);
+                    // push with the last copy from liveObj if HEARTBEAT:
+                    if (data.includes('HEARTBEAT')){
+                      JSON_data = JSON.parse(data);
+                      for (var i in liveObj) {
+                        if (liveObj.hasOwnProperty(i)) {
+                          var time = Date.parse(JSON_data.time);
+                          //console.log(i);
+                          if (liveObj[i].ask.length!=0) {
+                            liveObj[i].ask.push([time, liveObj[i].ask[liveObj[i].ask.length-1][1]]);
+                            liveObj[i].bid.push([time, liveObj[i].bid[liveObj[i].bid.length-1][1]]);
+                          }
+                          // Set maximum number of data in liveObj:
+                          if (liveObj[i].ask.length > 100) {
+                            liveObj[i].ask.splice(0,1);
+                          }
+                          if (liveObj[i].bid.length > 100) {
+                            liveObj[i].bid.splice(0,1);
+                          }
+                        }
+                      }
+                      if (time-t0 >= candlesPeriod && t0 != 0) {
+                          candleDone = true;
+                      }
+                      if (liveObj[chartLive.title.textStr]) {
+                          if (liveObj[chartLive.title.textStr].ask.length!=0) {
+                            chartLive.series[0].addPoint([time, liveObj[chartLive.title.textStr].ask[liveObj[chartLive.title.textStr].ask.length-1][1]]);
+                            chartLive.series[1].addPoint([time, liveObj[chartLive.title.textStr].bid[liveObj[chartLive.title.textStr].bid.length-1][1]]);
+                          }
+                        }  
+                      //console.log(chartLive.title.textStr)
+                    }
+
                     if (!data.includes('HEARTBEAT')){
-                        try{
+                        try {
                             JSON_data = JSON.parse(data);
                         }
                         catch(err){
@@ -707,27 +930,61 @@
                         //console.log(`Instrument: ${instrument}, bid: ${bid}, ask: ${ask}`);
                         appendDash($(`.${instrument}.ask`), $(`.${instrument}.bid`), ask , bid);
 
+                        //Put the data in the liveObj:
+                        if (liveObj[instrument]) {
+                          var time = Date.parse(JSON_data.time);
+                          asksPrice = parseFloat(ask);
+                          bidsPrice = parseFloat(bid);
+                          liveObj[instrument].ask.push([time, asksPrice]);
+                          liveObj[instrument].bid.push([time, bidsPrice]);
+                          // Set maximum number of data in liveObj:
+                          if (liveObj[instrument].ask.length > 100) {
+                            liveObj[instrument].ask.splice(0,1);
+                          }
+                          if (liveObj[instrument].bid.length > 100) {
+                            liveObj[instrument].bid.splice(0,1);
+                          }
+                          //console.log(liveObj);
+                        }
+
+
                         // for highcharts:
+                        if (instrument == hoverInstrument) {
+                            // for Live Ticks:
+                            var time = Date.parse(JSON_data.time);
+                            if (JSON.parse(data)['type']=='PRICE') {
+                              asksPrice = parseFloat(ask);
+                              bidsPrice = parseFloat(bid);
+                              chartLive.series[0].addPoint([time, asksPrice]);
+                              chartLive.series[1].addPoint([time, bidsPrice]);
+                              chartLive.yAxis[0].options.plotLines[0].value = asksPrice;
+                              chartLive.yAxis[0].options.plotLines[0].label.text = asksPrice;
+                              chartLive.yAxis[0].options.plotLines[1].value = bidsPrice;
+                              chartLive.yAxis[0].options.plotLines[1].label.text = bidsPrice;
+                              chartLive.yAxis[0].update();
+                            }
+                        }
+
+
                         if (instrument == socketInstrument) {
                             var time = Date.parse(JSON_data.time);
                             if (JSON.parse(data)['type']=='PRICE') {
                                 asksPrice = parseFloat(ask);
                                 bidsPrice = parseFloat(bid);
+
                                 //console.log(chartTickCandles);
                                 //chartTickCandles.yAxis.plotLines.value[0] = bidsPrice;
                                 //chartTickCandles.yAxis.plotLines.value = asksPrice;
-                                /*
-                                // for Live Ticks:
-                                chartLive.series[0].addPoint([time, asksPrice]);
-                                chartLive.series[1].addPoint([time, bidsPrice]);
-                                */
                                 chartTickCandles.yAxis[0].options.plotLines[0].value = asksPrice;
-                                chartTickCandles.yAxis[0].update();
+                                chartTickCandles.yAxis[0].options.plotLines[0].label.text = 'Ask: '+asksPrice;
+                                //chartTickCandles.yAxis[0].update();
                                 chartTickCandles.yAxis[0].options.plotLines[1].value = bidsPrice;
+                                chartTickCandles.yAxis[0].options.plotLines[1].label.text = 'Bid: '+bidsPrice;
                                 chartTickCandles.yAxis[0].update();
 
                                 if (time-t0 >= candlesPeriod && t0 != 0) {
-                                    chartTickCandles.series[0].addPoint([(time+t0)/2, o, h, l, c]);
+                                    //chartTickCandles.series[0].addPoint([(time+t0)/2, o, h, l, c]);
+                                    chartTickCandles.series[0].data[chartTickCandles.series[0].data.length-1].update([(time+t0)/2, o, h, l, c]);
                                     candleDone = true;
                                 }
 
@@ -737,15 +994,19 @@
                                     t0 = time;
                                     console.log('candleDone');
                                     candleDone = false;
+                                    chartTickCandles.series[0].addPoint([(time+t0)/2, o, h, l, c]);
                                 }
                                 else {
                                     if (bidsPrice > h && time-t0 <= candlesPeriod) {
                                         h = bidsPrice;
+                                        chartTickCandles.series[0].data[chartTickCandles.series[0].data.length-1].update([(time+t0)/2, o, h, l, c]);
                                     }
                                     if (bidsPrice < l && time-t0 <= candlesPeriod) {
                                         l = bidsPrice;
+                                        chartTickCandles.series[0].data[chartTickCandles.series[0].data.length-1].update([(time+t0)/2, o, h, l, c]);
                                     }
                                     c = bidsPrice;
+                                    chartTickCandles.series[0].data[chartTickCandles.series[0].data.length-1].update([(time+t0)/2, o, h, l, c]);
                                 }
                             }
 
@@ -760,7 +1021,7 @@
                     } //End if !data.includes('HEARTBEAT')
                 });
 
-            }
+                }
 
             setInterval(()=>{
                 axios.get(link, {
